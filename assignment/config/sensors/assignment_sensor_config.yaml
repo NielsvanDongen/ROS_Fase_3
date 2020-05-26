@@ -4,27 +4,39 @@ sensors:
     pose:
       xyz: [1.6, 2.25, 0.91]
       rpy: [0, 0, 'pi']
-
+#logical camera placed above Bin
   logical_camera_0:
     type: logical_camera
     pose:
       xyz: [4.9861935, 1.744565, 1.8]
       rpy: [0, 'pi/2', 0]
-
+#logical camera placed above Bin
   logical_camera_1:
     type: logical_camera
     pose:
       xyz: [3.104531, 1.744565, 1.8]
       rpy: [0, 'pi/2', 0]
-
+#logical camera placed above Bin
   logical_camera_2:
     type: logical_camera
     pose:
       xyz: [3.104531, -1.744565, 1.8]
       rpy: [0, 'pi/2', 0]
-
+#logical camera placed above Bin
   logical_camera_3:
     type: logical_camera
     pose:
       xyz: [4.9861935, -1.744565, 1.8]
+      rpy: [0, 'pi/2', 0]
+#logical camera placed above Conveyor belt
+  logical_camera_4:
+    type: logical_camera
+    pose:
+      xyz: [0, 2.25, 1.8]
+      rpy: [0, 'pi/2', 0]
+#logical camera placed above Conveyor belt
+  logical_camera_5:
+    type: logical_camera
+    pose:
+      xyz: [0, -2.25, 1.8]
       rpy: [0, 'pi/2', 0]
