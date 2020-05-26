@@ -5,4 +5,8 @@ sensors:
       xyz: [1.6, 2.25, 0.91]
       rpy: [0, 0, 'pi']
 
-
+  logical_camera_0:
+    type: logical_camera
+    pose:
+      xyz: [4.9861935, 1.744565, 1.8]
+      rpy: [0, 'pi/2', 0]
