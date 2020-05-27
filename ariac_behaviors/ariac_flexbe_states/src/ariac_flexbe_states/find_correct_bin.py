@@ -1,31 +1,72 @@
 #!/usr/bin/env python
 import rospy
+import rostopic
+import inspect
 
 from flexbe_core import EventState, Logger
+from nist_gear.msg import LogicalCameraImage, Model
+from flexbe_core.proxy import ProxySubscriberCached
 
 
-class DummyState(EventState):
+class FindCorrectBin(EventState):
 	'''
-	Dummy State, does nothing
+	Find the correct bin of the product to be picked
 
-	<= done 			Given time has passed.
+	-- time_out		float 	Time which needs to have passed since the behavior started.
+	># part_type		string		part needed to be picked
 
+	#> bin			string		part location bin
+	#> camera_topic		string		set camera
+	#> camera_frame		string		set camera frame
+	#> ref_frame		string		set ref
+
+	<= continue 				bin found.
+	<= failed 				Example for a failure outcome.
+	
 	'''
 
-	def __init__(self):
+	def __init__(self, time_out = 0.5):
 		# Declare outcomes, input_keys, and output_keys by calling the super constructor with the corresponding arguments.
-		super(DummyState, self).__init__(outcomes = ['done'])
+		super(FindCorrectBin, self).__init__(outcomes = ['continue', 'failed'], input_keys = ['part_type'], output_keys = ['bin','camera_topic','camera_frame','ref_frame'])
 
 		# The constructor is called when building the state machine, not when actually starting the behavior.
 		# Thus, we cannot save the starting time now and will do so later.
-
+		self._wait = time_out
 
 	def execute(self, userdata):
 		# This method is called periodically while the state is active.
 		# Main purpose is to check state conditions and trigger a corresponding outcome.
 		# If no outcome is returned, the state will stay active.
 
-		return 'done' # One of the outcomes declared above.
+		for i in [0,1,2,3,4,5]:
+			self._topic = "/ariac/logical_camera_"+str(i)
+
+			self._start_time = rospy.Time.now()
+
+			(msg_path, msg_topic, fn) = rostopic.get_topic_type(self._topic)
+
+			if msg_topic == self._topic:
+				msg_type = self._get_msg_from_path(msg_path)
+				self._sub = ProxySubscriberCached({self._topic: msg_type})
+			elapsed = rospy.get_rostime() - self._start_time;
+			while (elapsed.to_sec() < self._wait):
+				elapsed = rospy.get_rostime() - self._start_time;
+				if self._sub.has_msg(self._topic):
+					message = self._sub.get_last_msg(self._topic)
+					for model in message.models:
+						if model.type == userdata.part_type:
+							userdata.bin = "bingr"+str(i)+"PreGrasp"
+							userdata.camera_topic = "/ariac/logical_camera_"+str(i)
+							userdata.camera_frame = "logical_camera_"+str(i)+"_frame"
+							Logger.loginfo("bingr"+str(i)+"PreGrasp")
+							userdata.ref_frame = "torso_main"
+							return 'continue'
+		Logger.loginfo("part_type not found")
+		return 'failed'
+
+
+
+		#return 'continue' # One of the outcomes declared above.
 		
 
 	def on_enter(self, userdata):
@@ -51,7 +92,8 @@ class DummyState(EventState):
 		# because if anything failed, the behavior would not even be started.
 
 		# In this example, we use this event to set the correct start time.
-		pass # Nothing to do in this example.
+		self._start_time = rospy.Time.now()
+
 		
 
 	def on_stop(self):
@@ -60,3 +102,14 @@ class DummyState(EventState):
 
 		pass # Nothing to do in this example.
 		
+	def _get_msg_from_path(self, msg_path):
+		'''
+		Created on 11.06.2013
+
+		@author: Philipp Schillinger
+		'''
+		msg_import = msg_path.split('/')
+		msg_module = '%s.msg' % (msg_import[0])
+		package = __import__(msg_module, fromlist=[msg_module])
+		clsmembers = inspect.getmembers(package, lambda member: inspect.isclass(member) and member.__module__.endswith(msg_import[1]))
+		return clsmembers[0][1]
