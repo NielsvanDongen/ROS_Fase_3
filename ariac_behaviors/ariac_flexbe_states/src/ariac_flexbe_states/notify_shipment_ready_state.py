@@ -18,7 +18,7 @@ class NotifyShipmentReadyState(EventState):
 	#> message		string
 
 	<= continue 		Given time has passed.
-	<= fail			
+	<= fail
 
 	'''
 
@@ -38,7 +38,7 @@ class NotifyShipmentReadyState(EventState):
 			rospy.wait_for_service('/ariac/agv1')
 			NotifyShipmentReady = rospy.ServiceProxy('/ariac/agv1', AGVControl)
 		else:
-			if userdata.destination_id == 'agv2':
+			if userdata.agv_id == 'agv2':
 				rospy.wait_for_service('/ariac/agv2')
 				NotifyShipmentReady = rospy.ServiceProxy('/ariac/agv2', AGVControl)
 			else:
@@ -63,7 +63,7 @@ class NotifyShipmentReadyState(EventState):
 
 
 	def on_enter(self, userdata):
-		# This method is called when the state becomes active, i.e. a transition from 
+		# This method is called when the state becomes active, i.e. a transition from
 		pass # Nothing to do in this example.
 
 	def on_exit(self, userdata):
@@ -87,4 +87,3 @@ class NotifyShipmentReadyState(EventState):
 		# Use this event to clean up things like claimed resources.
 
 		pass # Nothing to do in this example.
-		

@@ -50,7 +50,7 @@ class GetAgvStatusState(EventState):
 	#> agv_state		string status of the selected agv
 
 	<= continue 		Given time has passed.
-	<= fail			
+	<= fail
 
 	'''
 
@@ -68,9 +68,9 @@ class GetAgvStatusState(EventState):
 			userdata.agv_state = status.data
 			return 'continue'
 		else:
-			if userdata.destination_id == 'agv2':
+			if userdata.agv_id == 'agv2':
 				status = rospy.wait_for_message('/ariac/agv2/state', String)
-				userdata.agv_status = status.data
+				userdata.agv_state = status.data
 				return 'continue'
 			else:
 				userdata.agv_state = None
