@@ -12,6 +12,8 @@ from ariac_flexbe_states.start_assignment_state import StartAssignment
 from ariac_flexbe_states.set_conveyorbelt_power_state import SetConveyorbeltPowerState
 from ariac_flexbe_behaviors.move_home_belt_sm import move_home_beltSM
 from ariac_flexbe_states.detect_first_part_camera_ariac_state import DetectFirstPartCameraAriacState
+from flexbe_states.wait_state import WaitState
+from ariac_flexbe_states.detect_part_camera_ariac_state import DetectPartCameraAriacState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -47,7 +49,7 @@ class move_product_to_warehouseSM(Behavior):
 
 
 	def create(self):
-		# x:877 y:408, x:267 y:397
+		# x:1220 y:329, x:267 y:397
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 		_state_machine.userdata.powerOn = 100
 		_state_machine.userdata.config_name_Home = 'Gantry_Home'
@@ -58,9 +60,9 @@ class move_product_to_warehouseSM(Behavior):
 		_state_machine.userdata.joint_values = []
 		_state_machine.userdata.joint_names = []
 		_state_machine.userdata.powerOff = 0
-		_state_machine.userdata.ref_frame = ''
-		_state_machine.userdata.camera_topic = '/ariac/logical_camera_4'
-		_state_machine.userdata.camera_frame = 'logical_camera_4_frame'
+		_state_machine.userdata.ref_frame = 'torso_main'
+		_state_machine.userdata.camera_topic = '/ariac/logical_camera_6'
+		_state_machine.userdata.camera_frame = 'logical_camera_6_frame'
 		_state_machine.userdata.part_type = ''
 		_state_machine.userdata.pose = []
 
@@ -92,17 +94,30 @@ class move_product_to_warehouseSM(Behavior):
 
 			# x:554 y:37
 			OperatableStateMachine.add('CameraDetectPartPose',
-										DetectFirstPartCameraAriacState(part_list=['piston_rod_part_red', 'gasket_part_blue'], time_out=0.5),
-										transitions={'continue': 'TurnOnConveyor_2', 'failed': 'failed', 'not_found': 'failed'},
+										DetectFirstPartCameraAriacState(part_list=['piston_rod_part_red', 'piston_rod_part_red_1', 'piston_rod_part_red_2', 'gasket_part_blue_0', 'gasket_part_blue_1', 'gasket_part_blue_2'], time_out=0.5),
+										transitions={'continue': 'TurnOffConveyor', 'failed': 'WaitRetry', 'not_found': 'WaitRetry'},
 										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off, 'not_found': Autonomy.Off},
 										remapping={'ref_frame': 'ref_frame', 'camera_topic': 'camera_topic', 'camera_frame': 'camera_frame', 'part': 'part_type', 'pose': 'pose'})
 
 			# x:769 y:38
-			OperatableStateMachine.add('TurnOnConveyor_2',
+			OperatableStateMachine.add('TurnOffConveyor',
 										SetConveyorbeltPowerState(),
-										transitions={'continue': 'finished', 'fail': 'failed'},
+										transitions={'continue': 'CameraRefreshPose', 'fail': 'failed'},
 										autonomy={'continue': Autonomy.Off, 'fail': Autonomy.Off},
 										remapping={'power': 'powerOff'})
+
+			# x:625 y:143
+			OperatableStateMachine.add('WaitRetry',
+										WaitState(wait_time=0.5),
+										transitions={'done': 'CameraDetectPartPose'},
+										autonomy={'done': Autonomy.Off})
+
+			# x:946 y:38
+			OperatableStateMachine.add('CameraRefreshPose',
+										DetectPartCameraAriacState(time_out=0.5),
+										transitions={'continue': 'finished', 'failed': 'failed', 'not_found': 'failed'},
+										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off, 'not_found': Autonomy.Off},
+										remapping={'ref_frame': 'ref_frame', 'camera_topic': 'camera_topic', 'camera_frame': 'camera_frame', 'part': 'part_type', 'pose': 'pose'})
 
 
 		return _state_machine
