@@ -11,12 +11,11 @@ from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyC
 from ariac_flexbe_states.start_assignment_state import StartAssignment
 from ariac_flexbe_states.set_conveyorbelt_power_state import SetConveyorbeltPowerState
 from ariac_flexbe_behaviors.move_home_belt_sm import move_home_beltSM
-from ariac_flexbe_states.detect_first_part_camera_ariac_state import DetectFirstPartCameraAriacState
-from ariac_flexbe_states.detect_part_camera_ariac_state import DetectPartCameraAriacState
 from ariac_flexbe_states.compute_grasp_ariac_state import ComputeGraspAriacState
 from flexbe_states.wait_state import WaitState
 from ariac_flexbe_states.moveit_to_joints_dyn_ariac_state import MoveitToJointsDynAriacState
 from ariac_flexbe_states.decide_offset_product import DecideOffsetProduct
+from ariac_flexbe_states.detect_first_part_camera_ariac_state import DetectFirstPartCameraAriacState
 from ariac_flexbe_states.srdf_state_to_moveit_ariac_state import SrdfStateToMoveitAriac
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
@@ -56,24 +55,26 @@ class move_product_to_warehouseSM(Behavior):
 		# x:1227 y:622, x:267 y:397
 		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 		_state_machine.userdata.powerOn = 100
-		_state_machine.userdata.move_group = 'Left_Arm'
+		_state_machine.userdata.move_group = 'Right_Arm'
 		_state_machine.userdata.move_group_prefix = '/ariac/gantry'
 		_state_machine.userdata.action_topic = '/move_group'
 		_state_machine.userdata.robot_name = 'gantry'
 		_state_machine.userdata.joint_values = []
-		_state_machine.userdata.joint_names_left = ['left_elbow_joint', 'left_shoulder_lift_joint', 'left_shoulder_pan_joint', 'left_wrist_1_joint', 'left_wrist_2_joint', 'left_wrist_3_joint']
+		_state_machine.userdata.joint_names = []
 		_state_machine.userdata.powerOff = 0
 		_state_machine.userdata.ref_frame = 'world'
 		_state_machine.userdata.camera_topic = '/ariac/logical_camera_6'
 		_state_machine.userdata.camera_frame = 'logical_camera_6_frame'
-		_state_machine.userdata.part_type = ''
+		_state_machine.userdata.part_type = 'piston_rod_part_red'
 		_state_machine.userdata.pose = []
 		_state_machine.userdata.camera_topic_7 = '/ariac/logical_camera_7'
 		_state_machine.userdata.camera_frame_7 = 'logical_camera_7_frame'
 		_state_machine.userdata.part_offset = []
 		_state_machine.userdata.rotation = 0
-		_state_machine.userdata.tool_link = 'left_ee_link'
-		_state_machine.userdata.config_name_pregrasp = ''
+		_state_machine.userdata.tool_link = 'right_ee_link'
+		_state_machine.userdata.config_name_pregrasp = 'beltPreGrasp'
+		_state_machine.userdata.part_list = ['piston_rod_part_red', 'piston_rod_part_red_1', 'piston_rod_part_red_2', 'gasket_part_blue_0', 'gasket_part_blue_1', 'gasket_part_blue_2']
+		_state_machine.userdata.move_group = 'Gantry'
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -85,46 +86,32 @@ class move_product_to_warehouseSM(Behavior):
 			# x:30 y:40
 			OperatableStateMachine.add('StartAssignment',
 										StartAssignment(),
-										transitions={'continue': 'move_home_belt'},
+										transitions={'continue': 'TurnOnConveyor'},
 										autonomy={'continue': Autonomy.Off})
 
-			# x:360 y:37
+			# x:172 y:41
 			OperatableStateMachine.add('TurnOnConveyor',
 										SetConveyorbeltPowerState(),
-										transitions={'continue': 'CameraDetectPartPoseCamera6', 'fail': 'failed'},
+										transitions={'continue': 'move_home_belt', 'fail': 'failed'},
 										autonomy={'continue': Autonomy.Off, 'fail': Autonomy.Off},
 										remapping={'power': 'powerOn'})
 
-			# x:178 y:38
+			# x:361 y:39
 			OperatableStateMachine.add('move_home_belt',
 										self.use_behavior(move_home_beltSM, 'move_home_belt'),
-										transitions={'finished': 'TurnOnConveyor', 'failed': 'failed'},
+										transitions={'finished': 'DetectFirstPartBelt', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
-
-			# x:554 y:37
-			OperatableStateMachine.add('CameraDetectPartPoseCamera6',
-										DetectFirstPartCameraAriacState(part_list=['piston_rod_part_red', 'piston_rod_part_red_1', 'piston_rod_part_red_2', 'gasket_part_blue_0', 'gasket_part_blue_1', 'gasket_part_blue_2'], time_out=0.5),
-										transitions={'continue': 'TurnOffConveyor', 'failed': 'WaitRetry', 'not_found': 'WaitRetry'},
-										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off, 'not_found': Autonomy.Off},
-										remapping={'ref_frame': 'ref_frame', 'camera_topic': 'camera_topic', 'camera_frame': 'camera_frame', 'part': 'part_type', 'pose': 'pose'})
 
 			# x:769 y:38
 			OperatableStateMachine.add('TurnOffConveyor',
 										SetConveyorbeltPowerState(),
-										transitions={'continue': 'CameraRefreshPose', 'fail': 'failed'},
+										transitions={'continue': 'DetectFirstPartBelt_2', 'fail': 'failed'},
 										autonomy={'continue': Autonomy.Off, 'fail': Autonomy.Off},
 										remapping={'power': 'powerOff'})
 
-			# x:946 y:38
-			OperatableStateMachine.add('CameraRefreshPose',
-										DetectPartCameraAriacState(time_out=0.5),
-										transitions={'continue': 'BeltPreGrasp', 'failed': 'failed', 'not_found': 'failed'},
-										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off, 'not_found': Autonomy.Off},
-										remapping={'ref_frame': 'ref_frame', 'camera_topic': 'camera_topic', 'camera_frame': 'camera_frame', 'part': 'part_type', 'pose': 'pose'})
-
 			# x:1135 y:204
 			OperatableStateMachine.add('ComputeGrasp',
-										ComputeGraspAriacState(joint_names=['left_elbow_joint', 'left_shoulder_lift_joint', 'left_shoulder_pan_joint', 'left_wrist_1_joint', 'left_wrist_2_joint', 'left_wrist_3_joint']),
+										ComputeGraspAriacState(joint_names=['right_shoulder_pan_joint', 'right_shoulder_lift_joint', 'right_elbow_joint', 'right_wrist_1_joint', 'right_wrist_2_joint', 'right_wrist_3_joint']),
 										transitions={'continue': 'PickProduct', 'failed': 'failed'},
 										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off},
 										remapping={'move_group': 'move_group', 'move_group_prefix': 'move_group_prefix', 'tool_link': 'tool_link', 'pose': 'pose', 'offset': 'part_offset', 'rotation': 'rotation', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
@@ -132,7 +119,7 @@ class move_product_to_warehouseSM(Behavior):
 			# x:470 y:134
 			OperatableStateMachine.add('WaitRetry',
 										WaitState(wait_time=0.5),
-										transitions={'done': 'CameraDetectPartPoseCamera6'},
+										transitions={'done': 'DetectFirstPartBelt'},
 										autonomy={'done': Autonomy.Off})
 
 			# x:1120 y:284
@@ -145,12 +132,26 @@ class move_product_to_warehouseSM(Behavior):
 			# x:1154 y:127
 			OperatableStateMachine.add('DecideOffset',
 										DecideOffsetProduct(target_time=0.5),
-										transitions={'succes': 'ComputeGrasp', 'unknown_id': 'BeltPreGrasp'},
+										transitions={'succes': 'ComputeGrasp', 'unknown_id': 'DetectFirstPartBelt_2'},
 										autonomy={'succes': Autonomy.Off, 'unknown_id': Autonomy.Off},
 										remapping={'part_type': 'part_type', 'part_offset': 'part_offset'})
 
-			# x:1143 y:40
-			OperatableStateMachine.add('BeltPreGrasp',
+			# x:561 y:38
+			OperatableStateMachine.add('DetectFirstPartBelt',
+										DetectFirstPartCameraAriacState(part_list=['piston_rod_part_red', 'gasket_part_blue_0', 'gasket_part_blue_1', 'gasket_part_blue_2'], time_out=0.5),
+										transitions={'continue': 'TurnOffConveyor', 'failed': 'failed', 'not_found': 'WaitRetry'},
+										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off, 'not_found': Autonomy.Off},
+										remapping={'ref_frame': 'ref_frame', 'camera_topic': 'camera_topic', 'camera_frame': 'camera_frame', 'part': 'part_type', 'pose': 'pose'})
+
+			# x:958 y:36
+			OperatableStateMachine.add('DetectFirstPartBelt_2',
+										DetectFirstPartCameraAriacState(part_list=['piston_rod_part_red', 'gasket_part_blue_0', 'gasket_part_blue_1', 'gasket_part_blue_2'], time_out=0.5),
+										transitions={'continue': 'MovePreGraspBelt', 'failed': 'failed', 'not_found': 'failed'},
+										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off, 'not_found': Autonomy.Off},
+										remapping={'ref_frame': 'ref_frame', 'camera_topic': 'camera_topic', 'camera_frame': 'camera_frame', 'part': 'part_type', 'pose': 'pose'})
+
+			# x:1164 y:36
+			OperatableStateMachine.add('MovePreGraspBelt',
 										SrdfStateToMoveitAriac(),
 										transitions={'reached': 'DecideOffset', 'planning_failed': 'failed', 'control_failed': 'DecideOffset', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
