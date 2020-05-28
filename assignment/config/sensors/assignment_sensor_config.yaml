@@ -32,13 +32,13 @@ sensors:
   logical_camera_4:
     type: logical_camera
     pose:
-      xyz: [-4.9861935, -1.744565, 1.8]
+      xyz: [-2.093984, 0.578742, 1.8]
       rpy: [0, 'pi/2', 0]
 #logical camera placed above shelve
   logical_camera_5:
     type: logical_camera
     pose:
-      xyz: [-4.0861935, -1.744565, 1.8]
+      xyz: [-2.093984, 3.676406, 1.8]
       rpy: [0, 'pi/2', 0]
 #logical camera placed above Conveyor belt
   logical_camera_6:
