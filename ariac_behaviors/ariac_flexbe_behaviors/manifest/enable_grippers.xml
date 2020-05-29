@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="enable_grippers">
+
+	<executable package_path="ariac_flexbe_behaviors.enable_grippers_sm" class="enable_grippersSM" />
+	<tagstring></tagstring>
+	<author>Niels van Dongen</author>
+	<date>Wed May 27 2020</date>
+	<description>
+		Behavior te reset the grippers of the robot arms
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>
