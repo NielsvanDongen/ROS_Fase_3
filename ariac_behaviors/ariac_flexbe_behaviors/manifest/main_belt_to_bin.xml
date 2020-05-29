@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="main_belt_to_bin">
+
+	<executable package_path="ariac_flexbe_behaviors.main_belt_to_bin_sm" class="main_belt_to_binSM" />
+	<tagstring>Main</tagstring>
+	<author>Wessel Koolen</author>
+	<date>Fri May 29 2020</date>
+	<description>
+		Main behavior for controlling supply line
+	</description>
+
+
+	<!-- Contained Behaviors -->
+	<contains name="move_home_belt" />
+	<contains name="detect_product_belt" />
+
+	<!-- Available Parameters -->
+
+</behavior>

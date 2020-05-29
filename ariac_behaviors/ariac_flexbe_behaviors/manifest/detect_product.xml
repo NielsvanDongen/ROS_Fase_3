@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="detect_product">
+
+	<executable package_path="ariac_flexbe_behaviors.detect_product_sm" class="detect_productSM" />
+	<tagstring></tagstring>
+	<author>Wessel Koolen</author>
+	<date>Fri May 29 2020</date>
+	<description>
+		Behavior for moving to detected part
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

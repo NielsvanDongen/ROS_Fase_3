@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="detect_product_belt">
+
+	<executable package_path="ariac_flexbe_behaviors.detect_product_belt_sm" class="detect_product_beltSM" />
+	<tagstring></tagstring>
+	<author>Wessel Koolen</author>
+	<date>Fri May 29 2020</date>
+	<description>
+		Behavior for moving to detected part
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>
