@@ -36,10 +36,10 @@ class GripperControl(EventState):
 
 	def execute(self, userdata):
 		if userdata.arm_id == 'Left_Arm':
-			gripper_service = '/ariac/Left_Arm/gripper/control'
+			gripper_service = '/ariac/gantry/left_arm/gripper/control'
 
 		elif userdata.arm_id == 'Right_Arm':
-			gripper_service = '/ariac/Right_Arm/gripper/control'
+			gripper_service = '/ariac/gantry/right_arm/gripper/control'
 
 		else:
 			return 'invalid_id'
@@ -56,11 +56,11 @@ class GripperControl(EventState):
 			if service_response.success == True:
 				if self._enable == True:
 					if userdata.arm_id == 'Left_Arm':
-						status = rospy.wait_for_message('/ariac/Left_Arm/gripper/state', VacuumGripperState)
+						status = rospy.wait_for_message('/ariac/gantry/left_arm/gripper/state', VacuumGripperState)
 						if status.attached == True:
 							return 'continue'
 					elif userdata.arm_id == 'Right_Arm':
-						status = rospy.wait_for_message('/ariac/Right_Arm/gripper/state', VacuumGripperState)
+						status = rospy.wait_for_message('/ariac/gantry/right_arm/gripper/state', VacuumGripperState)
 						if status.attached == True:
 							return 'continue'
 					else:
