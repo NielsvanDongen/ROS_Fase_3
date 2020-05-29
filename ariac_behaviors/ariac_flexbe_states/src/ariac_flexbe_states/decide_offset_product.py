@@ -33,7 +33,7 @@ class DecideOffsetProduct(EventState):
 				userdata.part_offset = 0.02
 				return 'succes'
 			elif self._part == 'piston_rod_part_red':
-				userdata.part_offset = 0.015
+				userdata.part_offset = 0.02
 				return 'succes'
 			elif self._part == 'gear_part_blue':
 				userdata.part_offset = 0.02

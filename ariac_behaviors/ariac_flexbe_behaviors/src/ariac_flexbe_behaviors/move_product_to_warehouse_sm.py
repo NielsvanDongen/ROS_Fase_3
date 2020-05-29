@@ -16,6 +16,8 @@ from flexbe_states.wait_state import WaitState
 from ariac_flexbe_states.moveit_to_joints_dyn_ariac_state import MoveitToJointsDynAriacState
 from ariac_flexbe_states.detect_first_part_camera_ariac_state import DetectFirstPartCameraAriacState
 from ariac_flexbe_states.srdf_state_to_moveit_ariac_state import SrdfStateToMoveitAriac
+from ariac_flexbe_states.gripper_control_state import GripperControl
+from ariac_flexbe_states.decide_offset_product import DecideOffsetProduct
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -75,6 +77,8 @@ class move_product_to_warehouseSM(Behavior):
 		_state_machine.userdata.move_group = 'Right_Arm'
 		_state_machine.userdata.joint_names_r = ['right_shoulder_pan_joint', 'right_shoulder_lift_joint', 'right_elbow_joint', 'right_wrist_1_joint', 'right_wrist_2_joint', 'right_wrist_3_joint']
 		_state_machine.userdata.robot_name_g = ''
+		_state_machine.userdata.arm_id = 'Right_Arm'
+		_state_machine.userdata.config_name_r_home = 'Right_Home'
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -109,7 +113,7 @@ class move_product_to_warehouseSM(Behavior):
 										autonomy={'continue': Autonomy.Off, 'fail': Autonomy.Off},
 										remapping={'power': 'powerOff'})
 
-			# x:1135 y:204
+			# x:1156 y:204
 			OperatableStateMachine.add('ComputeGrasp',
 										ComputeGraspAriacState(joint_names=['right_shoulder_pan_joint', 'right_shoulder_lift_joint', 'right_elbow_joint', 'right_wrist_1_joint', 'right_wrist_2_joint', 'right_wrist_3_joint']),
 										transitions={'continue': 'PickProduct', 'failed': 'failed'},
@@ -122,10 +126,10 @@ class move_product_to_warehouseSM(Behavior):
 										transitions={'done': 'DetectFirstPartBelt'},
 										autonomy={'done': Autonomy.Off})
 
-			# x:1120 y:284
+			# x:1143 y:288
 			OperatableStateMachine.add('PickProduct',
 										MoveitToJointsDynAriacState(),
-										transitions={'reached': 'MoveUp', 'planning_failed': 'failed', 'control_failed': 'failed'},
+										transitions={'reached': 'EnableGripper', 'planning_failed': 'failed', 'control_failed': 'EnableGripper'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off},
 										remapping={'move_group_prefix': 'move_group_prefix', 'move_group': 'move_group', 'action_topic': 'action_topic', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
@@ -146,16 +150,30 @@ class move_product_to_warehouseSM(Behavior):
 			# x:1164 y:36
 			OperatableStateMachine.add('MovePreGraspBelt',
 										SrdfStateToMoveitAriac(),
-										transitions={'reached': 'ComputeGrasp', 'planning_failed': 'failed', 'control_failed': 'failed', 'param_error': 'failed'},
+										transitions={'reached': 'DecideOffset', 'planning_failed': 'failed', 'control_failed': 'failed', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
 										remapping={'config_name': 'config_name_pregrasp', 'move_group': 'move_group_g', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name_g', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
-			# x:1147 y:439
+			# x:1167 y:449
 			OperatableStateMachine.add('MoveUp',
 										SrdfStateToMoveitAriac(),
-										transitions={'reached': 'finished', 'planning_failed': 'failed', 'control_failed': 'failed', 'param_error': 'failed'},
+										transitions={'reached': 'finished', 'planning_failed': 'failed', 'control_failed': 'finished', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
-										remapping={'config_name': 'config_name_pregrasp', 'move_group': 'move_group_g', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name_g', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
+										remapping={'config_name': 'config_name_r_home', 'move_group': 'move_group', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
+
+			# x:1186 y:368
+			OperatableStateMachine.add('EnableGripper',
+										GripperControl(enable=True),
+										transitions={'continue': 'MoveUp', 'failed': 'PickProduct', 'invalid_id': 'PickProduct'},
+										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off, 'invalid_id': Autonomy.Off},
+										remapping={'arm_id': 'arm_id'})
+
+			# x:1177 y:119
+			OperatableStateMachine.add('DecideOffset',
+										DecideOffsetProduct(target_time=0.5),
+										transitions={'succes': 'ComputeGrasp', 'unknown_id': 'DetectFirstPartBelt_2'},
+										autonomy={'succes': Autonomy.Off, 'unknown_id': Autonomy.Off},
+										remapping={'part_type': 'part_type', 'part_offset': 'part_offset'})
 
 
 		return _state_machine

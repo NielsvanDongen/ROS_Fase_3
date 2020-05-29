@@ -4,7 +4,7 @@ import rostopic
 
 from flexbe_core import EventState, Logger
 from nist_gear.msg import VacuumGripperState
-from nist_gear.srv import VacuumGripperControl
+from nist_gear.srv import VacuumGripperControl, VacuumGripperControlRequest, VacuumGripperControlResponse
 from std_msgs.msg import String
 
 # Authors: Wessel Koolen & Niels van Dongen
