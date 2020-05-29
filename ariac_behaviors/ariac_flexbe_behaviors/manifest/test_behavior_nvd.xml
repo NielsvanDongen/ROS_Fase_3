@@ -13,6 +13,7 @@
 
 	<!-- Contained Behaviors -->
 	<contains name="move_home_belt" />
+	<contains name="move_home_robot_r" />
 
 	<!-- Available Parameters -->
 
