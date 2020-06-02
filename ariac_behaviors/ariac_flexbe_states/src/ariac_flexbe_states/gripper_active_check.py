@@ -7,66 +7,71 @@ from nist_gear.msg import VacuumGripperState
 from nist_gear.srv import VacuumGripperControl, VacuumGripperControlRequest, VacuumGripperControlResponse
 from std_msgs.msg import String
 
-# Authors: Wessel Koolen & Niels van Dongen
+# Authors: Niels van Dongen
 
-class GripperActiceCheck(EventState):
+class GripperActiveCheck(EventState):
 	'''
 	This state is used for enabling and disabling the gripper used on both robotarms
 
-	-- enable 	bool 		Enables the vacuum gripper True of False
 
-	#> arm_id	string		Arm identifier.
 
-	<= continue 			Given time has passed.
-	<= failed 				Example for a failure outcome.
-	<= invalid_id			arm_id invalid
+	<= continue 			The left gripper already has a product attached.
+	<= failed 			The left gripper is empty.
+	<= arm_id	string		The arm id that is empty.
+	<= tool_link	string		The tool link that will be used.
+	<= move_group	string		The move group thats need to move.
+	#> joint_names	string[]	names of the joints
 
 	'''
 
-	def __init__(self, enable):
+	def __init__(self):
 		# Declare outcomes, input_keys, and output_keys by calling the super constructor with the corresponding arguments.
-		super(GripperActiceCheck, self).__init__(input_keys = ['arm_id'], outcomes = ['continue', 'failed', 'invalid_id'])
+		super(GripperActiveCheck, self).__init__(outcomes = ['Left', 'Right', 'failed', 'Full'], output_keys = ['arm_id','tool_link','move_group'])
 
 		# Store state parameter for later use.
 
-		self._enable = enable
+		#self._enable = enable
 		# The constructor is called when building the state machine, not when actually starting the behavior.
 		# Thus, we cannot save the starting time now and will do so later.
 
 
 	def execute(self, userdata):
-		if userdata.arm_id == 'Left_Arm':
-			gripper_service = '/ariac/gantry/left_arm/gripper/control'
-
-		elif userdata.arm_id == 'Right_Arm':
-			gripper_service = '/ariac/gantry/right_arm/gripper/control'
-
-		else:
-			return 'invalid_id'
+		gripper_service_l = '/ariac/gantry/left_arm/gripper/control'
+		gripper_service_r = '/ariac/gantry/right_arm/gripper/control'
 
 		rospy.loginfo("Waiting for service")
-		rospy.wait_for_service(gripper_service)
+		rospy.wait_for_service(gripper_service_l)
+		rospy.wait_for_service(gripper_service_r)
 		try:
-			gripper_control = rospy.ServiceProxy(gripper_service, VacuumGripperControl)
+			gripper_control_l = rospy.ServiceProxy(gripper_service_l, VacuumGripperControl)
+			gripper_control_r = rospy.ServiceProxy(gripper_service_r, VacuumGripperControl)
 			request = VacuumGripperControlRequest()
 			request.enable = self._enable
 
-			service_response = gripper_control(request)
+			service_response_l = gripper_control_l(request)
+			service_response_r = gripper_control_r(request)
 
-			if service_response.success == True:
+			if service_response_l.success == True and service_response_r.success == True:
 				if self._enable == True:
-					if userdata.arm_id == 'Left_Arm':
-						status = rospy.wait_for_message('/ariac/gantry/left_arm/gripper/state', VacuumGripperState)
-						if status.attached == True:
-							return 'continue'
-					elif userdata.arm_id == 'Right_Arm':
-						status = rospy.wait_for_message('/ariac/gantry/right_arm/gripper/state', VacuumGripperState)
-						if status.attached == True:
-							return 'continue'
-					else:
-						return 'failed'
+					status_l = rospy.wait_for_message('/ariac/gantry/left_arm/gripper/state', VacuumGripperState)
+					status_r = rospy.wait_for_message('/ariac/gantry/right_arm/gripper/state', VacuumGripperState)
+						if status_r.attached == False:
+							userdata.arm_id = "Right_Arm"
+							userdata.tool_link = "right_ee_link"
+							userdata.move_group = "Right_Arm"
+							return 'Right'
+
+						elif status_l.attached == False:
+							userdata.arm_id = "Left_Arm"
+							userdata.tool_link = "left_ee_link"
+							userdata.move_group = "Left_Arm"
+							return 'Left'
+						else: 
+							return 'Full'
+				
 				else:
-					return 'continue'
+						return 'failed'
+			
 			else:
 				return 'failed'
 
