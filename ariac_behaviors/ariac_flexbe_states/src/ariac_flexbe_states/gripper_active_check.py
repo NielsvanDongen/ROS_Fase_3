@@ -30,54 +30,39 @@ class GripperActiveCheck(EventState):
 
 		# Store state parameter for later use.
 
-		#self._enable = enable
+	
 		# The constructor is called when building the state machine, not when actually starting the behavior.
 		# Thus, we cannot save the starting time now and will do so later.
 
 
 	def execute(self, userdata):
-		gripper_service_l = '/ariac/gantry/left_arm/gripper/control'
-		gripper_service_r = '/ariac/gantry/right_arm/gripper/control'
+		#gripper_service_l = '/ariac/gantry/left_arm/gripper/control'
+		#gripper_service_r = '/ariac/gantry/right_arm/gripper/control'
 
-		rospy.loginfo("Waiting for service")
-		rospy.wait_for_service(gripper_service_l)
-		rospy.wait_for_service(gripper_service_r)
-		try:
-			gripper_control_l = rospy.ServiceProxy(gripper_service_l, VacuumGripperControl)
-			gripper_control_r = rospy.ServiceProxy(gripper_service_r, VacuumGripperControl)
-			request = VacuumGripperControlRequest()
-			request.enable = self._enable
+		#rospy.loginfo("Waiting for service")
+		#rospy.wait_for_service(gripper_service_l)
+		#rospy.wait_for_service(gripper_service_r)
+		#service_response = gripper_control(request)
 
-			service_response_l = gripper_control_l(request)
-			service_response_r = gripper_control_r(request)
+		#if service_response.success == True:
+		status_l = rospy.wait_for_message('/ariac/gantry/left_arm/gripper/state', VacuumGripperState)
+		status_r = rospy.wait_for_message('/ariac/gantry/right_arm/gripper/state', VacuumGripperState)
+		if status_r.attached == False:
+			userdata.arm_id = "Right_Arm"
+			userdata.tool_link = "right_ee_link"
+			userdata.move_group = "Right_Arm"
+			return 'Right'
 
-			if service_response_l.success == True and service_response_r.success == True:
-				if self._enable == True:
-					status_l = rospy.wait_for_message('/ariac/gantry/left_arm/gripper/state', VacuumGripperState)
-					status_r = rospy.wait_for_message('/ariac/gantry/right_arm/gripper/state', VacuumGripperState)
-						if status_r.attached == False:
-							userdata.arm_id = "Right_Arm"
-							userdata.tool_link = "right_ee_link"
-							userdata.move_group = "Right_Arm"
-							return 'Right'
+		elif status_l.attached == False:
+			userdata.arm_id = "Left_Arm"
+			userdata.tool_link = "left_ee_link"
+			userdata.move_group = "Left_Arm"
+			return 'Left'
+		else: 
+			return 'Full'
+		
+	
 
-						elif status_l.attached == False:
-							userdata.arm_id = "Left_Arm"
-							userdata.tool_link = "left_ee_link"
-							userdata.move_group = "Left_Arm"
-							return 'Left'
-						else: 
-							return 'Full'
-				
-				else:
-						return 'failed'
-			
-			else:
-				return 'failed'
-
-		except rospy.ServiceException, e:
-			rospy.loginfo("Service call failed: %s"%e)
-			return 'failed'
 
 		# This method is called periodically while the state is active.
 		# Main purpose is to check state conditions and trigger a corresponding outcome.
