@@ -14,6 +14,7 @@
 	<!-- Contained Behaviors -->
 	<contains name="move_home_belt" />
 	<contains name="detect_product_belt" />
+	<contains name="move_to_part_belt_right_arm" />
 
 	<!-- Available Parameters -->
 

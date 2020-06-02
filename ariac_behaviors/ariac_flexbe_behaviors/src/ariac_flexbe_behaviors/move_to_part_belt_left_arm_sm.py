@@ -12,6 +12,7 @@ from ariac_flexbe_states.decide_offset_product import DecideOffsetProduct
 from ariac_flexbe_states.moveit_to_joints_dyn_ariac_state import MoveitToJointsDynAriacState
 from ariac_flexbe_states.gripper_control_state import GripperControl
 from ariac_flexbe_states.compute_grasp_ariac_state import ComputeGraspAriacState
+from ariac_support_flexbe_states.replace_state import ReplaceState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -22,15 +23,15 @@ from ariac_flexbe_states.compute_grasp_ariac_state import ComputeGraspAriacState
 Created on Tue Jun 02 2020
 @author: Wessel Koolen
 '''
-class move_to_part_beltSM(Behavior):
+class move_to_part_belt_left_armSM(Behavior):
 	'''
 	This behavior uses part information to move to an allocated spot, here the robot picks up that part
 	'''
 
 
 	def __init__(self):
-		super(move_to_part_beltSM, self).__init__()
-		self.name = 'move_to_part_belt'
+		super(move_to_part_belt_left_armSM, self).__init__()
+		self.name = 'move_to_part_belt_left_arm'
 
 		# parameters of this behavior
 
@@ -46,19 +47,20 @@ class move_to_part_beltSM(Behavior):
 
 
 	def create(self):
-		# x:809 y:46, x:356 y:305, x:268 y:204
-		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed', 'unkown_id'], input_keys=['part_type', 'pose'])
+		# x:983 y:56, x:356 y:305, x:268 y:204
+		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed', 'unkown_id'], input_keys=['part_type', 'pose'], output_keys=['part_type_l'])
 		_state_machine.userdata.part_type = ''
 		_state_machine.userdata.pose = []
-		_state_machine.userdata.move_group = 'Gantry'
+		_state_machine.userdata.move_group = 'Left_Arm'
 		_state_machine.userdata.move_group_prefix = '/ariac/gantry'
-		_state_machine.userdata.tool_link = 'right_ee_link'
+		_state_machine.userdata.tool_link = 'left_ee_link'
 		_state_machine.userdata.part_offset = 0
 		_state_machine.userdata.rotation = 0
 		_state_machine.userdata.joint_values = []
 		_state_machine.userdata.joint_names = []
 		_state_machine.userdata.action_topic = '/move_group'
-		_state_machine.userdata.arm_id = 'Right_Arm'
+		_state_machine.userdata.arm_id = 'Left_Arm'
+		_state_machine.userdata.part_type_l = ''
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -84,16 +86,23 @@ class move_to_part_beltSM(Behavior):
 			# x:629 y:37
 			OperatableStateMachine.add('EnableGripper',
 										GripperControl(enable=True),
-										transitions={'continue': 'finished', 'failed': 'failed', 'invalid_id': 'unkown_id'},
+										transitions={'continue': 'ReplacePartType', 'failed': 'failed', 'invalid_id': 'unkown_id'},
 										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off, 'invalid_id': Autonomy.Off},
 										remapping={'arm_id': 'arm_id'})
 
 			# x:237 y:40
 			OperatableStateMachine.add('ComputePick',
-										ComputeGraspAriacState(joint_names=['right_elbow_joint', 'right_shoulder_lift_joint', 'right_shoulder_pan_joint', 'right_wrist_1_joint', 'right_wrist_2_joint', 'right_wrist_2_joint']),
+										ComputeGraspAriacState(joint_names=['left_elbow_joint', 'left_shoulder_lift_joint', 'left_shoulder_pan_joint', 'left_wrist_1_joint', 'left_wrist_2_joint', 'left_wrist_2_joint']),
 										transitions={'continue': 'MoveToPartBelt', 'failed': 'failed'},
 										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off},
 										remapping={'move_group': 'move_group', 'move_group_prefix': 'move_group_prefix', 'tool_link': 'tool_link', 'pose': 'pose', 'offset': 'part_offset', 'rotation': 'rotation', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
+
+			# x:770 y:35
+			OperatableStateMachine.add('ReplacePartType',
+										ReplaceState(),
+										transitions={'done': 'finished'},
+										autonomy={'done': Autonomy.Off},
+										remapping={'value': 'part_type', 'result': 'part_type_l'})
 
 
 		return _state_machine

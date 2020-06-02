@@ -64,7 +64,7 @@ class detect_product_beltSM(Behavior):
 			# x:30 y:40
 			OperatableStateMachine.add('DetectFirstProduct',
 										DetectFirstPartCameraAriacState(part_list=['piston_rod_part_red', 'gasket_part_blue'], time_out=0.5),
-										transitions={'continue': 'TurnConveyorOff', 'failed': 'failed', 'not_found': 'WaitRetry'},
+										transitions={'continue': 'TurnConveyorOff', 'failed': 'WaitRetry', 'not_found': 'WaitRetry'},
 										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off, 'not_found': Autonomy.Off},
 										remapping={'ref_frame': 'ref_frame', 'camera_topic': 'camera_topic', 'camera_frame': 'camera_frame', 'part': 'part_type', 'pose': 'pose'})
 

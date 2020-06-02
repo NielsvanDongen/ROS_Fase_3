@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="move_to_part_belt_right_arm">
+
+	<executable package_path="ariac_flexbe_behaviors.move_to_part_belt_right_arm_sm" class="move_to_part_belt_right_armSM" />
+	<tagstring>pickandplace</tagstring>
+	<author>Wessel Koolen</author>
+	<date>Tue Jun 02 2020</date>
+	<description>
+		This behavior uses part information to move to an allocated spot, here the robot picks up that part
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>
