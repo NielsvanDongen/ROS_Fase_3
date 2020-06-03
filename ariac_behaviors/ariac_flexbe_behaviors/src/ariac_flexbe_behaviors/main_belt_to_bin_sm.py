@@ -17,6 +17,7 @@ from ariac_flexbe_states.srdf_state_to_moveit_ariac_state import SrdfStateToMove
 from ariac_flexbe_states.start_assignment_state import StartAssignment
 from ariac_flexbe_behaviors.move_to_part_belt_left_arm_sm import move_to_part_belt_left_armSM
 from ariac_flexbe_states.end_assignment_state import EndAssignment
+from ariac_flexbe_behaviors.inspect_arm_part_type_right_sm import inspect_arm_part_type_rightSM
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -46,6 +47,7 @@ class main_belt_to_binSM(Behavior):
 		self.add_behavior(move_to_part_belt_right_armSM, 'move_to_part_belt_right_arm')
 		self.add_behavior(detect_product_beltSM, 'detect_product_belt_repeat')
 		self.add_behavior(move_to_part_belt_left_armSM, 'move_to_part_belt_left_arm')
+		self.add_behavior(inspect_arm_part_type_rightSM, 'inspect_arm_part_type_right')
 
 		# Additional initialization code can be added inside the following tags
 		# [MANUAL_INIT]
@@ -75,6 +77,8 @@ class main_belt_to_binSM(Behavior):
 		_state_machine.userdata.move_group_right = 'Right_Arm'
 		_state_machine.userdata.move_group_left = 'Left_Arm'
 		_state_machine.userdata.config_name_grasp_left = 'beltPreGrasp2'
+		_state_machine.userdata.part_type_left = ''
+		_state_machine.userdata.part_type_right = ''
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -109,42 +113,42 @@ class main_belt_to_binSM(Behavior):
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit},
 										remapping={'part_type': 'part_type', 'pose': 'pose'})
 
-			# x:993 y:40
+			# x:926 y:44
 			OperatableStateMachine.add('move_to_part_belt_right_arm',
 										self.use_behavior(move_to_part_belt_right_armSM, 'move_to_part_belt_right_arm'),
 										transitions={'finished': 'MoveRightSafety', 'failed': 'failed', 'unkown_id': 'BeltPreGraspRight'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit, 'unkown_id': Autonomy.Inherit},
-										remapping={'part_type': 'part_type', 'pose': 'pose', 'joint_values': 'joint_values', 'part_type_r': 'part_type_r'})
+										remapping={'part_type': 'part_type', 'pose': 'pose', 'joint_values': 'joint_values', 'part_type_right': 'part_type_right'})
 
-			# x:801 y:41
+			# x:762 y:43
 			OperatableStateMachine.add('BeltPreGraspRight',
 										SrdfStateToMoveitAriac(),
 										transitions={'reached': 'move_to_part_belt_right_arm', 'planning_failed': 'detect_product_belt', 'control_failed': 'failed', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
 										remapping={'config_name': 'config_name_grasp_right', 'move_group': 'move_group', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
-			# x:1050 y:130
+			# x:1156 y:45
 			OperatableStateMachine.add('MoveRightSafety',
 										SrdfStateToMoveitAriac(),
 										transitions={'reached': 'BeltPreGraspLeft', 'planning_failed': 'failed', 'control_failed': 'BeltPreGraspLeft', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
 										remapping={'config_name': 'config_name_right', 'move_group': 'move_group_right', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
-			# x:1052 y:222
+			# x:1158 y:124
 			OperatableStateMachine.add('BeltPreGraspLeft',
 										SrdfStateToMoveitAriac(),
 										transitions={'reached': 'ConveyorPowerOnRepeat', 'planning_failed': 'failed', 'control_failed': 'ConveyorPowerOnRepeat', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
 										remapping={'config_name': 'config_name_grasp_left', 'move_group': 'move_group', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
-			# x:1036 y:309
+			# x:1137 y:215
 			OperatableStateMachine.add('ConveyorPowerOnRepeat',
 										SetConveyorbeltPowerState(),
 										transitions={'continue': 'detect_product_belt_repeat', 'fail': 'failed'},
 										autonomy={'continue': Autonomy.Off, 'fail': Autonomy.Off},
 										remapping={'power': 'powerOn'})
 
-			# x:1007 y:389
+			# x:1105 y:301
 			OperatableStateMachine.add('detect_product_belt_repeat',
 										self.use_behavior(detect_product_beltSM, 'detect_product_belt_repeat'),
 										transitions={'finished': 'move_to_part_belt_left_arm', 'failed': 'failed'},
@@ -157,17 +161,17 @@ class main_belt_to_binSM(Behavior):
 										transitions={'continue': 'ConveyorPowerOn'},
 										autonomy={'continue': Autonomy.Off})
 
-			# x:1004 y:474
+			# x:1106 y:393
 			OperatableStateMachine.add('move_to_part_belt_left_arm',
 										self.use_behavior(move_to_part_belt_left_armSM, 'move_to_part_belt_left_arm'),
 										transitions={'finished': 'MoveLeftSafety', 'failed': 'failed', 'unkown_id': 'detect_product_belt_repeat'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit, 'unkown_id': Autonomy.Inherit},
-										remapping={'part_type': 'part_type', 'pose': 'pose', 'joint_values': 'joint_values', 'part_type_l': 'part_type_l'})
+										remapping={'part_type': 'part_type', 'pose': 'pose', 'joint_values': 'joint_values', 'part_type_left': 'part_type_left'})
 
-			# x:1059 y:566
+			# x:1159 y:478
 			OperatableStateMachine.add('MoveLeftSafety',
 										SrdfStateToMoveitAriac(),
-										transitions={'reached': 'EndAssignment', 'planning_failed': 'failed', 'control_failed': 'failed', 'param_error': 'failed'},
+										transitions={'reached': 'inspect_arm_part_type_right', 'planning_failed': 'failed', 'control_failed': 'failed', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
 										remapping={'config_name': 'config_name_left', 'move_group': 'move_group_left', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
@@ -176,6 +180,13 @@ class main_belt_to_binSM(Behavior):
 										EndAssignment(),
 										transitions={'continue': 'finished'},
 										autonomy={'continue': Autonomy.Off})
+
+			# x:1098 y:567
+			OperatableStateMachine.add('inspect_arm_part_type_right',
+										self.use_behavior(inspect_arm_part_type_rightSM, 'inspect_arm_part_type_right'),
+										transitions={'gasket_part': 'EndAssignment', 'failed': 'failed', 'piston_rod_part': 'EndAssignment'},
+										autonomy={'gasket_part': Autonomy.Inherit, 'failed': Autonomy.Inherit, 'piston_rod_part': Autonomy.Inherit},
+										remapping={'part_type_right': 'part_type_right', 'part_type_left': 'part_type_left'})
 
 
 		return _state_machine

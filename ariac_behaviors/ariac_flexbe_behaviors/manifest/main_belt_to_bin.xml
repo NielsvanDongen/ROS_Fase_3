@@ -17,6 +17,7 @@
 	<contains name="detect_product_belt" />
 	<contains name="move_to_part_belt_right_arm" />
 	<contains name="move_to_part_belt_left_arm" />
+	<contains name="inspect_arm_part_type_right" />
 
 	<!-- Available Parameters -->
 

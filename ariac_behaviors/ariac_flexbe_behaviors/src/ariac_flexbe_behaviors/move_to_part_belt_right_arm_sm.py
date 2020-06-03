@@ -12,6 +12,7 @@ from ariac_flexbe_states.decide_offset_product import DecideOffsetProduct
 from ariac_flexbe_states.gripper_control_state import GripperControl
 from ariac_flexbe_states.compute_grasp_ariac_state import ComputeGraspAriacState
 from ariac_flexbe_states.moveit_to_joints_dyn_ariac_state import MoveitToJointsDynAriacState
+from ariac_support_flexbe_states.replace_state import ReplaceState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -47,7 +48,7 @@ class move_to_part_belt_right_armSM(Behavior):
 
 	def create(self):
 		# x:1203 y:331, x:356 y:305, x:344 y:207
-		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed', 'unkown_id'], input_keys=['part_type', 'pose', 'joint_values'], output_keys=['part_type_r'])
+		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed', 'unkown_id'], input_keys=['part_type', 'pose', 'joint_values'], output_keys=['part_type_right'])
 		_state_machine.userdata.part_type = ''
 		_state_machine.userdata.pose = []
 		_state_machine.userdata.move_group = 'Right_Arm'
@@ -59,7 +60,7 @@ class move_to_part_belt_right_armSM(Behavior):
 		_state_machine.userdata.joint_names = []
 		_state_machine.userdata.action_topic = '/move_group'
 		_state_machine.userdata.arm_id = 'Right_Arm'
-		_state_machine.userdata.part_type_r = ''
+		_state_machine.userdata.part_type_right = ''
 		_state_machine.userdata.robot_name = ''
 
 		# Additional creation code can be added inside the following tags
@@ -79,7 +80,7 @@ class move_to_part_belt_right_armSM(Behavior):
 			# x:816 y:35
 			OperatableStateMachine.add('EnableGripper',
 										GripperControl(enable=True),
-										transitions={'continue': 'finished', 'failed': 'failed', 'invalid_id': 'unkown_id'},
+										transitions={'continue': 'ReplacePartType', 'failed': 'failed', 'invalid_id': 'unkown_id'},
 										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off, 'invalid_id': Autonomy.Off},
 										remapping={'arm_id': 'arm_id'})
 
@@ -96,6 +97,13 @@ class move_to_part_belt_right_armSM(Behavior):
 										transitions={'reached': 'EnableGripper', 'planning_failed': 'failed', 'control_failed': 'EnableGripper'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off},
 										remapping={'move_group_prefix': 'move_group_prefix', 'move_group': 'move_group', 'action_topic': 'action_topic', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
+
+			# x:973 y:34
+			OperatableStateMachine.add('ReplacePartType',
+										ReplaceState(),
+										transitions={'done': 'finished'},
+										autonomy={'done': Autonomy.Off},
+										remapping={'value': 'part_type', 'result': 'part_type_right'})
 
 
 		return _state_machine

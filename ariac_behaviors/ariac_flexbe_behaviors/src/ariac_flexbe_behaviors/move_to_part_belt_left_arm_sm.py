@@ -12,6 +12,7 @@ from ariac_flexbe_states.decide_offset_product import DecideOffsetProduct
 from ariac_flexbe_states.moveit_to_joints_dyn_ariac_state import MoveitToJointsDynAriacState
 from ariac_flexbe_states.gripper_control_state import GripperControl
 from ariac_flexbe_states.compute_grasp_ariac_state import ComputeGraspAriacState
+from ariac_support_flexbe_states.replace_state import ReplaceState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -47,7 +48,7 @@ class move_to_part_belt_left_armSM(Behavior):
 
 	def create(self):
 		# x:983 y:56, x:356 y:305, x:268 y:204
-		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed', 'unkown_id'], input_keys=['part_type', 'pose', 'joint_values'], output_keys=['part_type_l'])
+		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed', 'unkown_id'], input_keys=['part_type', 'pose', 'joint_values'], output_keys=['part_type_left'])
 		_state_machine.userdata.part_type = ''
 		_state_machine.userdata.pose = []
 		_state_machine.userdata.move_group = 'Left_Arm'
@@ -59,7 +60,7 @@ class move_to_part_belt_left_armSM(Behavior):
 		_state_machine.userdata.joint_names = []
 		_state_machine.userdata.action_topic = '/move_group'
 		_state_machine.userdata.arm_id = 'Left_Arm'
-		_state_machine.userdata.part_type_l = ''
+		_state_machine.userdata.part_type_left = ''
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -85,7 +86,7 @@ class move_to_part_belt_left_armSM(Behavior):
 			# x:629 y:37
 			OperatableStateMachine.add('EnableGripper',
 										GripperControl(enable=True),
-										transitions={'continue': 'finished', 'failed': 'failed', 'invalid_id': 'unkown_id'},
+										transitions={'continue': 'ReplacePartName', 'failed': 'failed', 'invalid_id': 'unkown_id'},
 										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off, 'invalid_id': Autonomy.Off},
 										remapping={'arm_id': 'arm_id'})
 
@@ -95,6 +96,13 @@ class move_to_part_belt_left_armSM(Behavior):
 										transitions={'continue': 'MoveToPartBelt', 'failed': 'failed'},
 										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off},
 										remapping={'move_group': 'move_group', 'move_group_prefix': 'move_group_prefix', 'tool_link': 'tool_link', 'pose': 'pose', 'offset': 'part_offset', 'rotation': 'rotation', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
+
+			# x:779 y:36
+			OperatableStateMachine.add('ReplacePartName',
+										ReplaceState(),
+										transitions={'done': 'finished'},
+										autonomy={'done': Autonomy.Off},
+										remapping={'value': 'part_type', 'result': 'part_type_left'})
 
 
 		return _state_machine
