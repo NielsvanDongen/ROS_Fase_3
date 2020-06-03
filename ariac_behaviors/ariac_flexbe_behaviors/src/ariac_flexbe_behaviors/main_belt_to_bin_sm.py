@@ -17,7 +17,7 @@ from ariac_flexbe_states.srdf_state_to_moveit_ariac_state import SrdfStateToMove
 from ariac_flexbe_states.start_assignment_state import StartAssignment
 from ariac_flexbe_behaviors.move_to_part_belt_left_arm_sm import move_to_part_belt_left_armSM
 from ariac_flexbe_states.end_assignment_state import EndAssignment
-from ariac_flexbe_behaviors.inspect_arm_part_type_right_sm import inspect_arm_part_type_rightSM
+from ariac_flexbe_behaviors.move_part_to_bin_sm import move_part_to_binSM
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -47,7 +47,7 @@ class main_belt_to_binSM(Behavior):
 		self.add_behavior(move_to_part_belt_right_armSM, 'move_to_part_belt_right_arm')
 		self.add_behavior(detect_product_beltSM, 'detect_product_belt_repeat')
 		self.add_behavior(move_to_part_belt_left_armSM, 'move_to_part_belt_left_arm')
-		self.add_behavior(inspect_arm_part_type_rightSM, 'inspect_arm_part_type_right')
+		self.add_behavior(move_part_to_binSM, 'move_part_to_bin')
 
 		# Additional initialization code can be added inside the following tags
 		# [MANUAL_INIT]
@@ -79,6 +79,7 @@ class main_belt_to_binSM(Behavior):
 		_state_machine.userdata.config_name_grasp_left = 'beltPreGrasp2'
 		_state_machine.userdata.part_type_left = ''
 		_state_machine.userdata.part_type_right = ''
+		_state_machine.userdata.config_name_place = 'gantryPosPlace'
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -171,7 +172,7 @@ class main_belt_to_binSM(Behavior):
 			# x:1159 y:478
 			OperatableStateMachine.add('MoveLeftSafety',
 										SrdfStateToMoveitAriac(),
-										transitions={'reached': 'inspect_arm_part_type_right', 'planning_failed': 'failed', 'control_failed': 'failed', 'param_error': 'failed'},
+										transitions={'reached': 'MovePlacePos', 'planning_failed': 'failed', 'control_failed': 'failed', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
 										remapping={'config_name': 'config_name_left', 'move_group': 'move_group_left', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
@@ -181,11 +182,18 @@ class main_belt_to_binSM(Behavior):
 										transitions={'continue': 'finished'},
 										autonomy={'continue': Autonomy.Off})
 
-			# x:1098 y:567
-			OperatableStateMachine.add('inspect_arm_part_type_right',
-										self.use_behavior(inspect_arm_part_type_rightSM, 'inspect_arm_part_type_right'),
-										transitions={'gasket_part': 'EndAssignment', 'failed': 'failed', 'piston_rod_part': 'EndAssignment'},
-										autonomy={'gasket_part': Autonomy.Inherit, 'failed': Autonomy.Inherit, 'piston_rod_part': Autonomy.Inherit},
+			# x:1160 y:565
+			OperatableStateMachine.add('MovePlacePos',
+										SrdfStateToMoveitAriac(),
+										transitions={'reached': 'move_part_to_bin', 'planning_failed': 'failed', 'control_failed': 'failed', 'param_error': 'failed'},
+										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
+										remapping={'config_name': 'config_name_place', 'move_group': 'move_group', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
+
+			# x:954 y:562
+			OperatableStateMachine.add('move_part_to_bin',
+										self.use_behavior(move_part_to_binSM, 'move_part_to_bin'),
+										transitions={'finished': 'EndAssignment', 'failed': 'failed'},
+										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit},
 										remapping={'part_type_right': 'part_type_right', 'part_type_left': 'part_type_left'})
 
 

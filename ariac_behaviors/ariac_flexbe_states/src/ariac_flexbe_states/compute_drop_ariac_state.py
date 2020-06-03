@@ -61,21 +61,24 @@ Created on Sep 5 2018
 
 @author: HRWROS mooc instructors
 Adapted to Ariac by: Gerard Harkema
+Adapted to assignment GantryRobot by: Wessel Koolen 2140086
 
 This state provides the joint configuration to grasp the box in the factory simulation of the MOOC "Hello (Real) World with ROS", given the pose of the box as provided by the DetectPartCameraState
 '''
 
-class ComputeGraspAriacState(EventState):
+class ComputeDropAriacState(EventState):
 	'''
 	Computes the joint configuration needed to grasp the part given its pose.
 
 	-- joint_names			string[]	Names of the joints
-	># offset				float		Some offset
+	># offset_x				float		Some offset x_axis
+	># offset_y				float		Some offset y_axis
+	># offset_z				float		Some offset z_axis
 	># rotation				float		Rotation?
 	># move_group       	string		Name of the group for which to compute the joint values for grasping.
-    ># move_group_prefix    string          Name of the prefix of the move group to be used for planning.
+    ># move_group_prefix    string      Name of the prefix of the move group to be used for planning.
 	># tool_link			string		e.g. "ee_link"
-	># pose					PoseStamped	pose of the part to pick
+	># pose					PoseStamped	pose of the part to drop
 	#> joint_values			float[]		joint values for grasping
 	#> joint_names			string[]	names of the joints
 
@@ -85,7 +88,7 @@ class ComputeGraspAriacState(EventState):
 
 	def __init__(self, joint_names):
 		# Declare outcomes, input_keys, and output_keys by calling the super constructor with the corresponding arguments.
-		super(ComputeGraspAriacState, self).__init__(outcomes = ['continue', 'failed'], input_keys = ['move_group', 'move_group_prefix', 'tool_link','pose', 'offset', 'rotation'], output_keys = ['joint_values','joint_names'])
+		super(ComputeDropAriacState, self).__init__(outcomes = ['continue', 'failed'], input_keys = ['move_group', 'move_group_prefix', 'tool_link','pose', 'offset_x', 'offset_y', 'offset_z', 'rotation'], output_keys = ['joint_values','joint_names'])
 
 		self._joint_names = joint_names
 
@@ -151,8 +154,9 @@ class ComputeGraspAriacState(EventState):
 				continue
 
 		# the grasp pose is defined as being located on top of the item
-		target_pose.pose.position.z += self._offset + 0.0
-
+		target_pose.pose.position.z += self._offset + 0.5
+		target_pose.pose.position.x += self._offset + 0.5
+		target_pose.pose.position.y += self._offset + 0.5
 
 		# rotate the object pose 180 degrees around - now works with -90???
 
