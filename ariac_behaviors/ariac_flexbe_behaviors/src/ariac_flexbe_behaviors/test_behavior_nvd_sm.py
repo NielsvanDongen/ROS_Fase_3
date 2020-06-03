@@ -62,7 +62,7 @@ class Test_behavior_nvdSM(Behavior):
 		_state_machine.userdata.move_group_prefix = '/ariac/gantry'
 		_state_machine.userdata.action_topic = '/move_group'
 		_state_machine.userdata.robot_name = 'gantry'
-		_state_machine.userdata.part_type = 'pulley_part_red'
+		_state_machine.userdata.part_type = 'gear_part_red'
 		_state_machine.userdata.joint_values = []
 		_state_machine.userdata.joint_names = []
 		_state_machine.userdata.ref_frame = 'world'

@@ -70,10 +70,11 @@ class Main_prog_order_pickingSM(Behavior):
 		_state_machine.userdata.rotation = 0
 		_state_machine.userdata.move_group = ''
 		_state_machine.userdata.arm_id = ''
-		_state_machine.userdata.index = 0
+		_state_machine.userdata.part_index = 0
 		_state_machine.userdata.part_type = ''
 		_state_machine.userdata.one = 1
 		_state_machine.userdata.product_itt = 0
+		_state_machine.userdata.shipments_index = 0
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -82,7 +83,7 @@ class Main_prog_order_pickingSM(Behavior):
 
 
 		with _state_machine:
-			# x:99 y:29
+			# x:64 y:31
 			OperatableStateMachine.add('Start_assignment',
 										StartAssignment(),
 										transitions={'continue': 'move_home_belt'},
@@ -100,14 +101,14 @@ class Main_prog_order_pickingSM(Behavior):
 										GetProductsFromShipmentState(),
 										transitions={'continue': 'g', 'invalid_index': 'failed'},
 										autonomy={'continue': Autonomy.Off, 'invalid_index': Autonomy.Off},
-										remapping={'shipments': 'shipments', 'index': 'index', 'shipment_type': 'shipment_type', 'agv_id': 'agv_id', 'products': 'products', 'number_of_products': 'number_of_products'})
+										remapping={'shipments': 'shipments', 'index': 'shipments_index', 'shipment_type': 'shipment_type', 'agv_id': 'agv_id', 'products': 'products', 'number_of_products': 'number_of_products'})
 
 			# x:833 y:35
 			OperatableStateMachine.add('g',
 										GetPartFromProductsState(),
 										transitions={'continue': 'Order_picking', 'invalid_index': 'failed'},
 										autonomy={'continue': Autonomy.Off, 'invalid_index': Autonomy.Off},
-										remapping={'products': 'products', 'index': 'index', 'type': 'part_type', 'pose': 'pose'})
+										remapping={'products': 'products', 'index': 'part_index', 'type': 'part_type', 'pose': 'pose'})
 
 			# x:261 y:28
 			OperatableStateMachine.add('move_home_belt',
@@ -126,14 +127,14 @@ class Main_prog_order_pickingSM(Behavior):
 										AddNumericState(),
 										transitions={'done': 'Check_product_amount'},
 										autonomy={'done': Autonomy.Off},
-										remapping={'value_a': 'one', 'value_b': 'product_itt', 'result': 'product_itt'})
+										remapping={'value_a': 'one', 'value_b': 'part_index', 'result': 'part_index'})
 
 			# x:1039 y:251
 			OperatableStateMachine.add('Check_product_amount',
 										EqualState(),
-										transitions={'true': 'move_home_belt', 'false': 'get_orders'},
+										transitions={'true': 'move_home_belt', 'false': 'Get shipments'},
 										autonomy={'true': Autonomy.Off, 'false': Autonomy.Off},
-										remapping={'value_a': 'number_of_products', 'value_b': 'product_itt'})
+										remapping={'value_a': 'number_of_products', 'value_b': 'part_index'})
 
 
 		return _state_machine
