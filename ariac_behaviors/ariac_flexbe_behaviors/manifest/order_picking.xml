@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="Order_picking">
+
+	<executable package_path="ariac_flexbe_behaviors.order_picking_sm" class="Order_pickingSM" />
+	<tagstring></tagstring>
+	<author>Niels van Dongen</author>
+	<date>Thu May 27 2020</date>
+	<description>
+		behavior for picking products from bin 
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>
