@@ -16,7 +16,6 @@ from ariac_flexbe_behaviors.move_to_part_belt_right_arm_sm import move_to_part_b
 from ariac_flexbe_states.srdf_state_to_moveit_ariac_state import SrdfStateToMoveitAriac
 from ariac_flexbe_states.start_assignment_state import StartAssignment
 from ariac_flexbe_behaviors.move_to_part_belt_left_arm_sm import move_to_part_belt_left_armSM
-from ariac_flexbe_states.end_assignment_state import EndAssignment
 from ariac_flexbe_behaviors.move_part_to_bin_sm import move_part_to_binSM
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
@@ -48,6 +47,7 @@ class main_belt_to_binSM(Behavior):
 		self.add_behavior(detect_product_beltSM, 'detect_product_belt_repeat')
 		self.add_behavior(move_to_part_belt_left_armSM, 'move_to_part_belt_left_arm')
 		self.add_behavior(move_part_to_binSM, 'move_part_to_bin')
+		self.add_behavior(move_home_beltSM, 'move_home_belt_2')
 
 		# Additional initialization code can be added inside the following tags
 		# [MANUAL_INIT]
@@ -59,8 +59,8 @@ class main_belt_to_binSM(Behavior):
 
 
 	def create(self):
-		# x:77 y:547, x:458 y:377
-		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
+		# x:458 y:377
+		_state_machine = OperatableStateMachine(outcomes=['failed'])
 		_state_machine.userdata.powerOn = 100
 		_state_machine.userdata.powerOff = 0
 		_state_machine.userdata.part_type = ''
@@ -176,12 +176,6 @@ class main_belt_to_binSM(Behavior):
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
 										remapping={'config_name': 'config_name_left', 'move_group': 'move_group_left', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
-			# x:192 y:563
-			OperatableStateMachine.add('EndAssignment',
-										EndAssignment(),
-										transitions={'continue': 'finished'},
-										autonomy={'continue': Autonomy.Off})
-
 			# x:1160 y:565
 			OperatableStateMachine.add('MovePlacePos',
 										SrdfStateToMoveitAriac(),
@@ -192,9 +186,15 @@ class main_belt_to_binSM(Behavior):
 			# x:954 y:562
 			OperatableStateMachine.add('move_part_to_bin',
 										self.use_behavior(move_part_to_binSM, 'move_part_to_bin'),
-										transitions={'finished': 'EndAssignment', 'failed': 'failed'},
+										transitions={'finished': 'move_home_belt_2', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit},
 										remapping={'part_type_right': 'part_type_right', 'part_type_left': 'part_type_left'})
+
+			# x:661 y:585
+			OperatableStateMachine.add('move_home_belt_2',
+										self.use_behavior(move_home_beltSM, 'move_home_belt_2'),
+										transitions={'finished': 'ConveyorPowerOn', 'failed': 'failed'},
+										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
 
 
 		return _state_machine

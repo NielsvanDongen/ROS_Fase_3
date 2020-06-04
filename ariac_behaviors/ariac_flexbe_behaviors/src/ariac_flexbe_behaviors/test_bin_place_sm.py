@@ -44,6 +44,7 @@ class test_bin_placeSM(Behavior):
 		self.add_behavior(detect_product_beltSM, 'detect_product_belt')
 		self.add_behavior(move_to_part_belt_right_armSM, 'move_to_part_belt_right_arm')
 		self.add_behavior(move_part_to_binSM, 'move_part_to_bin')
+		self.add_behavior(move_home_beltSM, 'move_home_belt_2')
 
 		# Additional initialization code can be added inside the following tags
 		# [MANUAL_INIT]
@@ -55,8 +56,8 @@ class test_bin_placeSM(Behavior):
 
 
 	def create(self):
-		# x:1185 y:548, x:644 y:287
-		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
+		# x:644 y:287
+		_state_machine = OperatableStateMachine(outcomes=['failed'])
 		_state_machine.userdata.powerOn = 100
 		_state_machine.userdata.part_type = ''
 		_state_machine.userdata.pose = []
@@ -143,9 +144,15 @@ class test_bin_placeSM(Behavior):
 			# x:1131 y:348
 			OperatableStateMachine.add('move_part_to_bin',
 										self.use_behavior(move_part_to_binSM, 'move_part_to_bin'),
-										transitions={'finished': 'finished', 'failed': 'failed'},
+										transitions={'finished': 'move_home_belt_2', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit},
 										remapping={'part_type_right': 'part_type_right', 'part_type_left': 'part_type_left'})
+
+			# x:528 y:489
+			OperatableStateMachine.add('move_home_belt_2',
+										self.use_behavior(move_home_beltSM, 'move_home_belt_2'),
+										transitions={'finished': 'ConveyorPowerOn', 'failed': 'failed'},
+										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
 
 
 		return _state_machine
