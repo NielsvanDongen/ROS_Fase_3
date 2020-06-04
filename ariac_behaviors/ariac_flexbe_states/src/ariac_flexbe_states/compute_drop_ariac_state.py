@@ -71,7 +71,7 @@ class ComputeDropAriacState(EventState):
 	Computes the joint configuration needed to grasp the part given its pose.
 
 	-- joint_names			string[]	Names of the joints
-	># offset				float		Some offset x_axis
+	># offset				float		Some offset axis
 	># rotation				float		Rotation?
 	># move_group       	string		Name of the group for which to compute the joint values for grasping.
     ># move_group_prefix    string      Name of the prefix of the move group to be used for planning.
@@ -130,7 +130,7 @@ class ComputeDropAriacState(EventState):
 		self._move_group_prefix = userdata.move_group_prefix
 		self._tool_link = userdata.tool_link
 
-		self._offset = userdata._offset
+		self._offset = userdata.offset
 		self._rotation = userdata.rotation
 
 		self._srv_name = userdata.move_group_prefix + '/compute_ik'
@@ -152,9 +152,9 @@ class ComputeDropAriacState(EventState):
 				continue
 
 		# the grasp pose is defined as being located on top of the item
-		target_pose.pose.position.z += self.part_offset + 0.5
-		target_pose.pose.position.x += self.part_offset + 0.5
-		target_pose.pose.position.y += self.part_offset + 0.5
+		target_pose.pose.position.z += 0.5
+		target_pose.pose.position.x += self._offset + -0.2
+		target_pose.pose.position.y += -0.2
 
 		# rotate the object pose 180 degrees around - now works with -90???
 

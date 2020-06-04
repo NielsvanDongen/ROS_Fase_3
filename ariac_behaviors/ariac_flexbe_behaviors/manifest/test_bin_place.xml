@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="test_bin_place">
+
+	<executable package_path="ariac_flexbe_behaviors.test_bin_place_sm" class="test_bin_placeSM" />
+	<tagstring>Main</tagstring>
+	<author>wessel koolen</author>
+	<date>Thu Jun 04 2020</date>
+	<description>
+		testprogramma wessel
+	</description>
+
+
+	<!-- Contained Behaviors -->
+	<contains name="enable_grippers" />
+	<contains name="move_home_belt" />
+	<contains name="detect_product_belt" />
+	<contains name="move_to_part_belt_right_arm" />
+	<contains name="move_part_to_bin" />
+
+	<!-- Available Parameters -->
+
+</behavior>
