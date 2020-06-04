@@ -78,7 +78,7 @@ class move_part_to_binSM(Behavior):
 		_state_machine.userdata.config_name_left_bin1 = 'leftArmBin1'
 		_state_machine.userdata.config_name_left_bin2 = 'leftArmBin2'
 		_state_machine.userdata.poseBin2 = []
-		_state_machine.userdata.iterator = 0.1
+		_state_machine.userdata.iterator = 0.15
 		_state_machine.userdata.offset = 0
 		_state_machine.userdata.bin2_offset = 0
 
@@ -92,8 +92,8 @@ class move_part_to_binSM(Behavior):
 			# x:86 y:86
 			OperatableStateMachine.add('inspect_arm_part_type_right',
 										self.use_behavior(inspect_arm_part_type_rightSM, 'inspect_arm_part_type_right'),
-										transitions={'gasket_part': 'MoveToGasketBin', 'failed': 'failed', 'piston_rod_part': 'MoveToPistonBin'},
-										autonomy={'gasket_part': Autonomy.Inherit, 'failed': Autonomy.Inherit, 'piston_rod_part': Autonomy.Inherit},
+										transitions={'gasket_part': 'MoveToGasketBin', 'no_part': 'inspect_arm_part_type_left', 'piston_rod_part': 'MoveToPistonBin'},
+										autonomy={'gasket_part': Autonomy.Inherit, 'no_part': Autonomy.Inherit, 'piston_rod_part': Autonomy.Inherit},
 										remapping={'part_type_right': 'part_type_right', 'part_type_left': 'part_type_left'})
 
 			# x:347 y:38
@@ -169,8 +169,8 @@ class move_part_to_binSM(Behavior):
 			# x:1405 y:510
 			OperatableStateMachine.add('inspect_arm_part_type_left',
 										self.use_behavior(inspect_arm_part_type_leftSM, 'inspect_arm_part_type_left'),
-										transitions={'gasket_part': 'MoveToGasketBinLeft', 'failed': 'failed', 'piston_rod_part': 'MoveToPistonBinLeft'},
-										autonomy={'gasket_part': Autonomy.Inherit, 'failed': Autonomy.Inherit, 'piston_rod_part': Autonomy.Inherit},
+										transitions={'gasket_part': 'MoveToGasketBinLeft', 'no_part': 'finished', 'piston_rod_part': 'MoveToPistonBinLeft'},
+										autonomy={'gasket_part': Autonomy.Inherit, 'no_part': Autonomy.Inherit, 'piston_rod_part': Autonomy.Inherit},
 										remapping={'part_type_right': 'part_type_right', 'part_type_left': 'part_type_left'})
 
 			# x:1188 y:444

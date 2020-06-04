@@ -17,6 +17,8 @@ from ariac_flexbe_states.srdf_state_to_moveit_ariac_state import SrdfStateToMove
 from ariac_flexbe_states.start_assignment_state import StartAssignment
 from ariac_flexbe_behaviors.move_to_part_belt_left_arm_sm import move_to_part_belt_left_armSM
 from ariac_flexbe_behaviors.move_part_to_bin_sm import move_part_to_binSM
+from ariac_support_flexbe_states.add_numeric_state import AddNumericState
+from flexbe_states.check_condition_state import CheckConditionState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -59,8 +61,8 @@ class main_belt_to_binSM(Behavior):
 
 
 	def create(self):
-		# x:458 y:377
-		_state_machine = OperatableStateMachine(outcomes=['failed'])
+		# x:458 y:377, x:95 y:655
+		_state_machine = OperatableStateMachine(outcomes=['failed', 'finish'])
 		_state_machine.userdata.powerOn = 100
 		_state_machine.userdata.powerOff = 0
 		_state_machine.userdata.part_type = ''
@@ -80,6 +82,8 @@ class main_belt_to_binSM(Behavior):
 		_state_machine.userdata.part_type_left = ''
 		_state_machine.userdata.part_type_right = ''
 		_state_machine.userdata.config_name_place = 'gantryPosPlace'
+		_state_machine.userdata.enumeration = 0
+		_state_machine.userdata.plus1 = 1
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -183,18 +187,32 @@ class main_belt_to_binSM(Behavior):
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
 										remapping={'config_name': 'config_name_place', 'move_group': 'move_group', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
-			# x:954 y:562
+			# x:980 y:621
 			OperatableStateMachine.add('move_part_to_bin',
 										self.use_behavior(move_part_to_binSM, 'move_part_to_bin'),
 										transitions={'finished': 'move_home_belt_2', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit},
 										remapping={'part_type_right': 'part_type_right', 'part_type_left': 'part_type_left'})
 
-			# x:661 y:585
+			# x:721 y:648
 			OperatableStateMachine.add('move_home_belt_2',
 										self.use_behavior(move_home_beltSM, 'move_home_belt_2'),
-										transitions={'finished': 'ConveyorPowerOn', 'failed': 'failed'},
+										transitions={'finished': 'AddToCondition', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
+
+			# x:477 y:640
+			OperatableStateMachine.add('AddToCondition',
+										AddNumericState(),
+										transitions={'done': 'CheckCondition'},
+										autonomy={'done': Autonomy.Off},
+										remapping={'value_a': 'enumeration', 'value_b': 'plus1', 'result': 'enumeration'})
+
+			# x:301 y:641
+			OperatableStateMachine.add('CheckCondition',
+										CheckConditionState(predicate=3),
+										transitions={'true': 'finish', 'false': 'ConveyorPowerOn'},
+										autonomy={'true': Autonomy.Off, 'false': Autonomy.Off},
+										remapping={'input_value': 'enumeration'})
 
 
 		return _state_machine

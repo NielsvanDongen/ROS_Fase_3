@@ -44,7 +44,7 @@ class inspect_arm_part_type_leftSM(Behavior):
 
 	def create(self):
 		# x:591 y:70, x:447 y:331, x:137 y:250
-		_state_machine = OperatableStateMachine(outcomes=['gasket_part', 'failed', 'piston_rod_part'], input_keys=['part_type_right', 'part_type_left'])
+		_state_machine = OperatableStateMachine(outcomes=['gasket_part', 'no_part', 'piston_rod_part'], input_keys=['part_type_right', 'part_type_left'])
 		_state_machine.userdata.piston_part = 'piston_rod_part_red'
 		_state_machine.userdata.gasket_part = 'gasket_part_blue'
 		_state_machine.userdata.part_type_right = ''
@@ -67,7 +67,7 @@ class inspect_arm_part_type_leftSM(Behavior):
 			# x:268 y:41
 			OperatableStateMachine.add('CheckRobot1Again',
 										EqualState(),
-										transitions={'true': 'gasket_part', 'false': 'failed'},
+										transitions={'true': 'gasket_part', 'false': 'no_part'},
 										autonomy={'true': Autonomy.Off, 'false': Autonomy.Off},
 										remapping={'value_a': 'part_type_left', 'value_b': 'gasket_part'})
 
