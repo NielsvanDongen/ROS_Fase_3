@@ -17,6 +17,7 @@ from ariac_flexbe_behaviors.order_picking_sm import Order_pickingSM
 from ariac_support_flexbe_states.add_numeric_state import AddNumericState
 from ariac_support_flexbe_states.equal_state import EqualState
 from ariac_flexbe_states.message_state import MessageState
+from ariac_flexbe_states.choice_of_location import choiceoflocation
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -27,15 +28,15 @@ from ariac_flexbe_states.message_state import MessageState
 Created on Thu May 27 2020
 @author: Niels van Dongen
 '''
-class Main_prog_order_pickingSM(Behavior):
+class Main_prog_order_picking_v2SM(Behavior):
 	'''
 	Main program for order picking
 	'''
 
 
 	def __init__(self):
-		super(Main_prog_order_pickingSM, self).__init__()
-		self.name = 'Main_prog_order_picking'
+		super(Main_prog_order_picking_v2SM, self).__init__()
+		self.name = 'Main_prog_order_picking_v2'
 
 		# parameters of this behavior
 
@@ -117,21 +118,21 @@ class Main_prog_order_pickingSM(Behavior):
 										transitions={'finished': 'get_orders', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
 
-			# x:1153 y:72
+			# x:1278 y:406
 			OperatableStateMachine.add('Order_picking',
 										self.use_behavior(Order_pickingSM, 'Order_picking'),
 										transitions={'finished': 'add_itterator order', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit},
 										remapping={'part_type': 'part_type'})
 
-			# x:1038 y:147
+			# x:905 y:467
 			OperatableStateMachine.add('add_itterator order',
 										AddNumericState(),
 										transitions={'done': 'part index message'},
 										autonomy={'done': Autonomy.Off},
 										remapping={'value_a': 'one', 'value_b': 'part_index', 'result': 'part_index'})
 
-			# x:1034 y:328
+			# x:536 y:510
 			OperatableStateMachine.add('Check_product_amount',
 										EqualState(),
 										transitions={'true': 'move_home_belt', 'false': 'Get shipments'},
@@ -141,16 +142,23 @@ class Main_prog_order_pickingSM(Behavior):
 			# x:1053 y:12
 			OperatableStateMachine.add('message part main prg',
 										MessageState(),
-										transitions={'continue': 'Order_picking'},
+										transitions={'continue': 'choice point'},
 										autonomy={'continue': Autonomy.Off},
 										remapping={'message': 'part_type'})
 
-			# x:1141 y:221
+			# x:750 y:504
 			OperatableStateMachine.add('part index message',
 										MessageState(),
 										transitions={'continue': 'Check_product_amount'},
 										autonomy={'continue': Autonomy.Off},
 										remapping={'message': 'part_index'})
+
+			# x:1277 y:24
+			OperatableStateMachine.add('choice point',
+										choiceoflocation(time_out=0.5),
+										transitions={'bingr0': 'Order_picking', 'bingr1': 'Order_picking', 'bingr2': 'Order_picking', 'bingr3': 'Order_picking', 'bingr4': 'Order_picking', 'bingr5': 'Order_picking', 'failed': 'failed'},
+										autonomy={'bingr0': Autonomy.Off, 'bingr1': Autonomy.Off, 'bingr2': Autonomy.Off, 'bingr3': Autonomy.Off, 'bingr4': Autonomy.Off, 'bingr5': Autonomy.Off, 'failed': Autonomy.Off},
+										remapping={'part_type': 'part_type'})
 
 
 		return _state_machine

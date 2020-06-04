@@ -8,7 +8,7 @@
 ###########################################################
 
 from flexbe_core import Behavior, Autonomy, OperatableStateMachine, ConcurrencyContainer, PriorityContainer, Logger
-from ariac_flexbe_states.find_correct_bin import FindCorrectBin
+from ariac_flexbe_states.message_state import MessageState
 from ariac_flexbe_states.srdf_state_to_moveit_ariac_state import SrdfStateToMoveitAriac
 from ariac_flexbe_states.compute_grasp_ariac_state import ComputeGraspAriacState
 from ariac_flexbe_states.detect_part_camera_ariac_state import DetectPartCameraAriacState
@@ -17,6 +17,7 @@ from ariac_flexbe_states.gripper_control_state import GripperControl
 from ariac_flexbe_states.moveit_to_joints_dyn_ariac_state import MoveitToJointsDynAriacState
 from ariac_flexbe_states.gripper_active_check import GripperActiveCheck
 from flexbe_states.wait_state import WaitState
+from ariac_flexbe_states.find_correct_bin import FindCorrectBin
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -29,7 +30,7 @@ Created on Thu May 27 2020
 '''
 class Order_pickingSM(Behavior):
 	'''
-	behavior for picking products from bin 
+	behavior for picking products from bin
 	'''
 
 
@@ -52,14 +53,13 @@ class Order_pickingSM(Behavior):
 
 	def create(self):
 		# x:27 y:469, x:647 y:299
-		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
+		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'], input_keys=['part_type'])
 		_state_machine.userdata.powerOn = 100
 		_state_machine.userdata.config_name = ''
 		_state_machine.userdata.move_group_g = 'Gantry'
 		_state_machine.userdata.move_group_prefix = '/ariac/gantry'
 		_state_machine.userdata.action_topic = '/move_group'
 		_state_machine.userdata.robot_name = 'gantry'
-		_state_machine.userdata.part_type = 'pulley_part_red'
 		_state_machine.userdata.joint_values = []
 		_state_machine.userdata.joint_names = []
 		_state_machine.userdata.ref_frame = 'world'
@@ -71,7 +71,8 @@ class Order_pickingSM(Behavior):
 		_state_machine.userdata.move_group = ''
 		_state_machine.userdata.arm_id = ''
 		_state_machine.userdata.config_name_r = 'Right_Home'
-		_state_machine.userdata.config_name_l = 'Left_home'
+		_state_machine.userdata.config_name_l = 'Left_Home'
+		_state_machine.userdata.part_type = ''
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -80,12 +81,12 @@ class Order_pickingSM(Behavior):
 
 
 		with _state_machine:
-			# x:152 y:81
-			OperatableStateMachine.add('Find_product_location',
-										FindCorrectBin(time_out=0.5),
-										transitions={'continue': 'move_gantry_bin_gr1', 'failed': 'failed'},
-										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off},
-										remapping={'part_type': 'part_type', 'bin': 'bin', 'camera_topic': 'camera_topic', 'camera_frame': 'camera_frame', 'ref_frame': 'ref_frame'})
+			# x:20 y:123
+			OperatableStateMachine.add('part in pick prg',
+										MessageState(),
+										transitions={'continue': 'Find_product_location'},
+										autonomy={'continue': Autonomy.Off},
+										remapping={'message': 'part_type'})
 
 			# x:338 y:86
 			OperatableStateMachine.add('move_gantry_bin_gr1',
@@ -176,6 +177,13 @@ class Order_pickingSM(Behavior):
 										WaitState(wait_time=2),
 										transitions={'done': 'move_gantry_bin_gr1'},
 										autonomy={'done': Autonomy.Off})
+
+			# x:152 y:81
+			OperatableStateMachine.add('Find_product_location',
+										FindCorrectBin(time_out=0.5),
+										transitions={'continue': 'move_gantry_bin_gr1', 'failed': 'failed'},
+										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off},
+										remapping={'part_type': 'part_type', 'bin': 'bin', 'camera_topic': 'camera_topic', 'camera_frame': 'camera_frame', 'ref_frame': 'ref_frame'})
 
 
 		return _state_machine

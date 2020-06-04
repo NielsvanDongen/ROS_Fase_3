@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="move_home_belt_nvd">
+
+	<executable package_path="ariac_flexbe_behaviors.move_home_belt_nvd_sm" class="move_home_belt_nvdSM" />
+	<tagstring></tagstring>
+	<author>Wessel Koolen</author>
+	<date>Wed May 27 2020</date>
+	<description>
+		Moves complete gantry to home position above the belt.
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>
