@@ -52,3 +52,15 @@ sensors:
     pose:
       xyz: [0, -2.25, 1.8]
       rpy: [0, 'pi/2', 0]
+#logical camera placed above agv1
+  logical_camera_8:
+    type: logical_camera
+    pose:
+      xyz: [0, 7.4646, 1.75]
+      rpy: [0, 'pi/2', 0]
+#logical camera placed above agv2
+  logical_camera_9:
+    type: logical_camera
+    pose:
+      xyz: [0, -7.4646, 1.75]
+      rpy: [0, 'pi/2', 0]
