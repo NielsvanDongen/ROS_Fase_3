@@ -15,6 +15,7 @@
 	<contains name="Order_picking" />
 	<contains name="shelve pick_behavior_nvd" />
 	<contains name="move_home_belt_nvd" />
+	<contains name="move_to_agv" />
 
 	<!-- Available Parameters -->
 

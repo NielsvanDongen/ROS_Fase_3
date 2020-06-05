@@ -20,6 +20,7 @@ from ariac_flexbe_states.choice_of_location import choiceoflocation
 from ariac_flexbe_behaviors.shelve_pick_behavior_nvd_sm import shelvepick_behavior_nvdSM
 from ariac_flexbe_behaviors.move_home_belt_nvd_sm import move_home_belt_nvdSM
 from ariac_flexbe_states.gripper_active_check import GripperActiveCheck
+from ariac_flexbe_behaviors.move_to_agv_sm import move_to_agvSM
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -46,6 +47,7 @@ class Main_prog_order_picking_v2SM(Behavior):
 		self.add_behavior(Order_pickingSM, 'Order_picking')
 		self.add_behavior(shelvepick_behavior_nvdSM, 'shelve pick_behavior_nvd')
 		self.add_behavior(move_home_belt_nvdSM, 'move_home_belt_nvd')
+		self.add_behavior(move_to_agvSM, 'move_to_agv')
 
 		# Additional initialization code can be added inside the following tags
 		# [MANUAL_INIT]
@@ -173,9 +175,16 @@ class Main_prog_order_picking_v2SM(Behavior):
 			# x:553 y:462
 			OperatableStateMachine.add('gripper check',
 										GripperActiveCheck(),
-										transitions={'Left': 'Get shipments', 'Right': 'Get shipments', 'failed': 'failed', 'Full': 'move_home_belt_nvd'},
+										transitions={'Left': 'Get shipments', 'Right': 'Get shipments', 'failed': 'failed', 'Full': 'move_to_agv'},
 										autonomy={'Left': Autonomy.Off, 'Right': Autonomy.Off, 'failed': Autonomy.Off, 'Full': Autonomy.Off},
 										remapping={'arm_id': 'arm_id', 'tool_link': 'tool_link', 'move_group': 'move_group'})
+
+			# x:293 y:570
+			OperatableStateMachine.add('move_to_agv',
+										self.use_behavior(move_to_agvSM, 'move_to_agv'),
+										transitions={'finished': 'finished', 'failed': 'failed'},
+										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit},
+										remapping={'agv_id': 'agv_id', 'pose_on_agv_l': 'pose_on_agv_l', 'pose_on_agv_r': 'pose_on_agv_r'})
 
 
 		return _state_machine
