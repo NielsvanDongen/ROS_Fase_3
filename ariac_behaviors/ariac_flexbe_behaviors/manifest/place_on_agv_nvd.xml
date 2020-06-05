@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="place_on_agv_nvd">
+
+	<executable package_path="ariac_flexbe_behaviors.place_on_agv_nvd_sm" class="place_on_agv_nvdSM" />
+	<tagstring></tagstring>
+	<author>Niels van Dongen</author>
+	<date>Thu May 27 2020</date>
+	<description>
+		behavior voor plaatsten parts on agv
+	</description>
+
+
+	<!-- Contained Behaviors -->
+	<contains name="move_home_belt" />
+
+	<!-- Available Parameters -->
+
+</behavior>

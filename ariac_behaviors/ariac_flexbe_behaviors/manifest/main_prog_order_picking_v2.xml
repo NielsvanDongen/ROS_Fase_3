@@ -12,8 +12,9 @@
 
 
 	<!-- Contained Behaviors -->
-	<contains name="move_home_belt" />
 	<contains name="Order_picking" />
+	<contains name="shelve pick_behavior_nvd" />
+	<contains name="move_home_belt_nvd" />
 
 	<!-- Available Parameters -->
 

@@ -18,6 +18,7 @@ from ariac_flexbe_states.moveit_to_joints_dyn_ariac_state import MoveitToJointsD
 from ariac_flexbe_states.gripper_active_check import GripperActiveCheck
 from flexbe_states.wait_state import WaitState
 from ariac_flexbe_states.find_correct_bin import FindCorrectBin
+from ariac_support_flexbe_states.replace_state import ReplaceState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -52,8 +53,8 @@ class Order_pickingSM(Behavior):
 
 
 	def create(self):
-		# x:27 y:469, x:647 y:299
-		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'], input_keys=['part_type'])
+		# x:412 y:439, x:647 y:299
+		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'], input_keys=['part_type', 'pose_on_agv'], output_keys=['pose_on_agv_r', 'pose_on_agv_l'])
 		_state_machine.userdata.powerOn = 100
 		_state_machine.userdata.config_name = ''
 		_state_machine.userdata.move_group_g = 'Gantry'
@@ -70,9 +71,12 @@ class Order_pickingSM(Behavior):
 		_state_machine.userdata.rotation = 0
 		_state_machine.userdata.move_group = ''
 		_state_machine.userdata.arm_id = ''
-		_state_machine.userdata.config_name_r = 'Right_Home'
-		_state_machine.userdata.config_name_l = 'Left_Home'
+		_state_machine.userdata.config_name_r = 'Right_Home_B'
+		_state_machine.userdata.config_name_l = 'Left_Home_B'
 		_state_machine.userdata.part_type = ''
+		_state_machine.userdata.pose_on_agv = []
+		_state_machine.userdata.pose_on_agv_l = []
+		_state_machine.userdata.pose_on_agv_r = []
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -147,7 +151,7 @@ class Order_pickingSM(Behavior):
 			# x:873 y:409
 			OperatableStateMachine.add('Move_pre_grasp',
 										SrdfStateToMoveitAriac(),
-										transitions={'reached': 'finished', 'planning_failed': 'failed', 'control_failed': 'failed', 'param_error': 'failed'},
+										transitions={'reached': 'Agv pose R', 'planning_failed': 'failed', 'control_failed': 'failed', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
 										remapping={'config_name': 'config_name_r', 'move_group': 'move_group', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
@@ -168,7 +172,7 @@ class Order_pickingSM(Behavior):
 			# x:1269 y:384
 			OperatableStateMachine.add('Move_pre_grasp_2',
 										SrdfStateToMoveitAriac(),
-										transitions={'reached': 'finished', 'planning_failed': 'failed', 'control_failed': 'failed', 'param_error': 'failed'},
+										transitions={'reached': 'Agv pose L', 'planning_failed': 'failed', 'control_failed': 'failed', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
 										remapping={'config_name': 'config_name_l', 'move_group': 'move_group', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
@@ -184,6 +188,20 @@ class Order_pickingSM(Behavior):
 										transitions={'continue': 'move_gantry_bin_gr1', 'failed': 'failed'},
 										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off},
 										remapping={'part_type': 'part_type', 'bin': 'bin', 'camera_topic': 'camera_topic', 'camera_frame': 'camera_frame', 'ref_frame': 'ref_frame'})
+
+			# x:769 y:508
+			OperatableStateMachine.add('Agv pose R',
+										ReplaceState(),
+										transitions={'done': 'finished'},
+										autonomy={'done': Autonomy.Off},
+										remapping={'value': 'pose_on_agv', 'result': 'pose_on_agv_r'})
+
+			# x:1257 y:505
+			OperatableStateMachine.add('Agv pose L',
+										ReplaceState(),
+										transitions={'done': 'finished'},
+										autonomy={'done': Autonomy.Off},
+										remapping={'value': 'pose_on_agv', 'result': 'pose_on_agv_l'})
 
 
 		return _state_machine

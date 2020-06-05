@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="move_home_robot_r_B">
+
+	<executable package_path="ariac_flexbe_behaviors.move_home_robot_r_b_sm" class="move_home_robot_r_BSM" />
+	<tagstring></tagstring>
+	<author>Niels van Dongen</author>
+	<date>Wed May 27 2020</date>
+	<description>
+		Moves right ganrobottry to home position.
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+
+</behavior>

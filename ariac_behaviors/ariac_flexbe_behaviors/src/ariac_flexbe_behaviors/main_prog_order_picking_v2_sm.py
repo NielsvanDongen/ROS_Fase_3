@@ -12,12 +12,14 @@ from ariac_flexbe_states.start_assignment_state import StartAssignment
 from ariac_logistics_flexbe_states.get_order_state import GetOrderState
 from ariac_logistics_flexbe_states.get_products_from_shipment_state import GetProductsFromShipmentState
 from ariac_logistics_flexbe_states.get_part_from_products_state import GetPartFromProductsState
-from ariac_flexbe_behaviors.move_home_belt_sm import move_home_beltSM
 from ariac_flexbe_behaviors.order_picking_sm import Order_pickingSM
 from ariac_support_flexbe_states.add_numeric_state import AddNumericState
 from ariac_support_flexbe_states.equal_state import EqualState
 from ariac_flexbe_states.message_state import MessageState
 from ariac_flexbe_states.choice_of_location import choiceoflocation
+from ariac_flexbe_behaviors.shelve_pick_behavior_nvd_sm import shelvepick_behavior_nvdSM
+from ariac_flexbe_behaviors.move_home_belt_nvd_sm import move_home_belt_nvdSM
+from ariac_flexbe_states.gripper_active_check import GripperActiveCheck
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -41,8 +43,9 @@ class Main_prog_order_picking_v2SM(Behavior):
 		# parameters of this behavior
 
 		# references to used behaviors
-		self.add_behavior(move_home_beltSM, 'move_home_belt')
 		self.add_behavior(Order_pickingSM, 'Order_picking')
+		self.add_behavior(shelvepick_behavior_nvdSM, 'shelve pick_behavior_nvd')
+		self.add_behavior(move_home_belt_nvdSM, 'move_home_belt_nvd')
 
 		# Additional initialization code can be added inside the following tags
 		# [MANUAL_INIT]
@@ -55,7 +58,7 @@ class Main_prog_order_picking_v2SM(Behavior):
 
 	def create(self):
 		# x:27 y:469, x:242 y:360
-		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
+		_state_machine = OperatableStateMachine(outcomes=['finished', 'failed'], output_keys=['part_type', 'pose_on_agv'])
 		_state_machine.userdata.powerOn = 100
 		_state_machine.userdata.config_name = ''
 		_state_machine.userdata.move_group_g = 'Gantry'
@@ -68,7 +71,7 @@ class Main_prog_order_picking_v2SM(Behavior):
 		_state_machine.userdata.camera_topic = ''
 		_state_machine.userdata.camera_frame = ''
 		_state_machine.userdata.tool_link = ''
-		_state_machine.userdata.pose = ''
+		_state_machine.userdata.pose_on_agv = ''
 		_state_machine.userdata.rotation = 0
 		_state_machine.userdata.move_group = ''
 		_state_machine.userdata.arm_id = ''
@@ -88,7 +91,7 @@ class Main_prog_order_picking_v2SM(Behavior):
 			# x:64 y:31
 			OperatableStateMachine.add('Start_assignment',
 										StartAssignment(),
-										transitions={'continue': 'move_home_belt'},
+										transitions={'continue': 'move_home_belt_nvd'},
 										autonomy={'continue': Autonomy.Off})
 
 			# x:431 y:28
@@ -110,32 +113,26 @@ class Main_prog_order_picking_v2SM(Behavior):
 										GetPartFromProductsState(),
 										transitions={'continue': 'message part main prg', 'invalid_index': 'failed'},
 										autonomy={'continue': Autonomy.Off, 'invalid_index': Autonomy.Off},
-										remapping={'products': 'products', 'index': 'part_index', 'type': 'part_type', 'pose': 'pose'})
+										remapping={'products': 'products', 'index': 'part_index', 'type': 'part_type', 'pose': 'pose_on_agv'})
 
-			# x:261 y:28
-			OperatableStateMachine.add('move_home_belt',
-										self.use_behavior(move_home_beltSM, 'move_home_belt'),
-										transitions={'finished': 'get_orders', 'failed': 'failed'},
-										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
-
-			# x:1278 y:406
+			# x:1263 y:258
 			OperatableStateMachine.add('Order_picking',
 										self.use_behavior(Order_pickingSM, 'Order_picking'),
 										transitions={'finished': 'add_itterator order', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit},
-										remapping={'part_type': 'part_type'})
+										remapping={'part_type': 'part_type', 'pose_on_agv': 'pose_on_agv', 'pose_on_agv_r': 'pose_on_agv_r', 'pose_on_agv_l': 'pose_on_agv_l'})
 
-			# x:905 y:467
+			# x:1141 y:386
 			OperatableStateMachine.add('add_itterator order',
 										AddNumericState(),
 										transitions={'done': 'part index message'},
 										autonomy={'done': Autonomy.Off},
 										remapping={'value_a': 'one', 'value_b': 'part_index', 'result': 'part_index'})
 
-			# x:536 y:510
+			# x:747 y:414
 			OperatableStateMachine.add('Check_product_amount',
 										EqualState(),
-										transitions={'true': 'move_home_belt', 'false': 'Get shipments'},
+										transitions={'true': 'move_home_belt_nvd', 'false': 'gripper check'},
 										autonomy={'true': Autonomy.Off, 'false': Autonomy.Off},
 										remapping={'value_a': 'number_of_products', 'value_b': 'part_index'})
 
@@ -146,7 +143,7 @@ class Main_prog_order_picking_v2SM(Behavior):
 										autonomy={'continue': Autonomy.Off},
 										remapping={'message': 'part_type'})
 
-			# x:750 y:504
+			# x:957 y:404
 			OperatableStateMachine.add('part index message',
 										MessageState(),
 										transitions={'continue': 'Check_product_amount'},
@@ -156,9 +153,29 @@ class Main_prog_order_picking_v2SM(Behavior):
 			# x:1277 y:24
 			OperatableStateMachine.add('choice point',
 										choiceoflocation(time_out=0.5),
-										transitions={'bingr0': 'Order_picking', 'bingr1': 'Order_picking', 'bingr2': 'Order_picking', 'bingr3': 'Order_picking', 'bingr4': 'Order_picking', 'bingr5': 'Order_picking', 'failed': 'failed'},
+										transitions={'bingr0': 'Order_picking', 'bingr1': 'Order_picking', 'bingr2': 'Order_picking', 'bingr3': 'Order_picking', 'bingr4': 'shelve pick_behavior_nvd', 'bingr5': 'shelve pick_behavior_nvd', 'failed': 'failed'},
 										autonomy={'bingr0': Autonomy.Off, 'bingr1': Autonomy.Off, 'bingr2': Autonomy.Off, 'bingr3': Autonomy.Off, 'bingr4': Autonomy.Off, 'bingr5': Autonomy.Off, 'failed': Autonomy.Off},
 										remapping={'part_type': 'part_type'})
+
+			# x:999 y:213
+			OperatableStateMachine.add('shelve pick_behavior_nvd',
+										self.use_behavior(shelvepick_behavior_nvdSM, 'shelve pick_behavior_nvd'),
+										transitions={'finished': 'add_itterator order', 'failed': 'failed'},
+										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit},
+										remapping={'pose_on_agv': 'pose_on_agv', 'part_type': 'part_type', 'pose_on_agv_l': 'pose_on_agv_l', 'pose_on_agv_r': 'pose_on_agv_r'})
+
+			# x:235 y:9
+			OperatableStateMachine.add('move_home_belt_nvd',
+										self.use_behavior(move_home_belt_nvdSM, 'move_home_belt_nvd'),
+										transitions={'finished': 'get_orders', 'failed': 'failed'},
+										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
+
+			# x:553 y:462
+			OperatableStateMachine.add('gripper check',
+										GripperActiveCheck(),
+										transitions={'Left': 'Get shipments', 'Right': 'Get shipments', 'failed': 'failed', 'Full': 'move_home_belt_nvd'},
+										autonomy={'Left': Autonomy.Off, 'Right': Autonomy.Off, 'failed': Autonomy.Off, 'Full': Autonomy.Off},
+										remapping={'arm_id': 'arm_id', 'tool_link': 'tool_link', 'move_group': 'move_group'})
 
 
 		return _state_machine
