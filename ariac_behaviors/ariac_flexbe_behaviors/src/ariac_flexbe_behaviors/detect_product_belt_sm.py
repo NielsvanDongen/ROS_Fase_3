@@ -13,7 +13,7 @@ from flexbe_states.wait_state import WaitState
 from ariac_flexbe_states.set_conveyorbelt_power_state import SetConveyorbeltPowerState
 from ariac_flexbe_states.detect_first_part_camera_ariac_state import DetectFirstPartCameraAriacState
 from ariac_support_flexbe_states.add_numeric_state import AddNumericState
-from flexbe_states.check_condition_state import CheckConditionState
+from ariac_support_flexbe_states.equal_state import EqualState
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
 
@@ -59,6 +59,7 @@ class detect_product_beltSM(Behavior):
 		_state_machine.userdata.retries = 0
 		_state_machine.userdata.plus = 1
 		_state_machine.userdata.zero = 0
+		_state_machine.userdata.condition = 15
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -74,9 +75,9 @@ class detect_product_beltSM(Behavior):
 										autonomy={'done': Autonomy.Off},
 										remapping={'value': 'zero', 'result': 'retries'})
 
-			# x:233 y:137
+			# x:200 y:131
 			OperatableStateMachine.add('WaitRetry',
-										WaitState(wait_time=0.1),
+										WaitState(wait_time=0.5),
 										transitions={'done': 'CountCameraTics'},
 										autonomy={'done': Autonomy.Off})
 
@@ -97,23 +98,23 @@ class detect_product_beltSM(Behavior):
 			# x:242 y:249
 			OperatableStateMachine.add('CountCameraTics',
 										AddNumericState(),
-										transitions={'done': 'CheckCameraTics'},
+										transitions={'done': 'CheckCondition'},
 										autonomy={'done': Autonomy.Off},
 										remapping={'value_a': 'retries', 'value_b': 'plus', 'result': 'retries'})
 
-			# x:348 y:139
-			OperatableStateMachine.add('CheckCameraTics',
-										CheckConditionState(predicate=15),
-										transitions={'true': 'no_products_belt', 'false': 'DetectFirstProduct'},
-										autonomy={'true': Autonomy.Off, 'false': Autonomy.Off},
-										remapping={'input_value': 'retries'})
-
 			# x:276 y:34
 			OperatableStateMachine.add('DetectFirstProduct',
-										DetectFirstPartCameraAriacState(part_list=['piston_rod_part_red', 'gasket_part_blue'], time_out=0.1),
+										DetectFirstPartCameraAriacState(part_list=['piston_rod_part_red', 'gasket_part_blue'], time_out=0.5),
 										transitions={'continue': 'TurnConveyorOff', 'failed': 'WaitRetry', 'not_found': 'WaitRetry'},
 										autonomy={'continue': Autonomy.Off, 'failed': Autonomy.Off, 'not_found': Autonomy.Off},
 										remapping={'ref_frame': 'ref_frame', 'camera_topic': 'camera_topic', 'camera_frame': 'camera_frame', 'part': 'part_type', 'pose': 'pose'})
+
+			# x:336 y:118
+			OperatableStateMachine.add('CheckCondition',
+										EqualState(),
+										transitions={'true': 'no_products_belt', 'false': 'DetectFirstProduct'},
+										autonomy={'true': Autonomy.Off, 'false': Autonomy.Off},
+										remapping={'value_a': 'retries', 'value_b': 'condition'})
 
 
 		return _state_machine

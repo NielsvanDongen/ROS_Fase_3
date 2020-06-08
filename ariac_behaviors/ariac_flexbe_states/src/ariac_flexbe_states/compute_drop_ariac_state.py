@@ -152,9 +152,9 @@ class ComputeDropAriacState(EventState):
 				continue
 
 		# the grasp pose is defined as being located on top of the item
-		target_pose.pose.position.z += 0.1
-		target_pose.pose.position.x += self._offset + -0.2
-		target_pose.pose.position.y += -0.2
+		target_pose.pose.position.z += 0.09
+		target_pose.pose.position.x += self._offset + -0.20
+		target_pose.pose.position.y += -0.15
 
 		# rotate the object pose 180 degrees around - now works with -90???
 

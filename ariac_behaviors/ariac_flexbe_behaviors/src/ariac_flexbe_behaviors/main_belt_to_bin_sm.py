@@ -63,7 +63,7 @@ class main_belt_to_binSM(Behavior):
 
 
 	def create(self):
-		# x:598 y:381, x:482 y:673
+		# x:598 y:381, x:114 y:451
 		_state_machine = OperatableStateMachine(outcomes=['failed', 'finish'])
 		_state_machine.userdata.powerOn = 100
 		_state_machine.userdata.powerOff = 0
@@ -84,8 +84,6 @@ class main_belt_to_binSM(Behavior):
 		_state_machine.userdata.part_type_left = ''
 		_state_machine.userdata.part_type_right = ''
 		_state_machine.userdata.config_name_place = 'gantryPosPlace'
-		_state_machine.userdata.enumeration = 0
-		_state_machine.userdata.plus1 = 1
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -97,7 +95,7 @@ class main_belt_to_binSM(Behavior):
 			# x:41 y:129
 			OperatableStateMachine.add('enable_grippers',
 										self.use_behavior(enable_grippersSM, 'enable_grippers'),
-										transitions={'finished': 'ExecuteMainBeltBin', 'failed': 'failed'},
+										transitions={'finished': 'StartAssignment', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
 
 			# x:195 y:41
@@ -116,7 +114,7 @@ class main_belt_to_binSM(Behavior):
 			# x:576 y:42
 			OperatableStateMachine.add('detect_product_belt',
 										self.use_behavior(detect_product_beltSM, 'detect_product_belt'),
-										transitions={'finished': 'BeltPreGraspRight', 'failed': 'failed', 'no_products_belt': 'move_home_belt_2'},
+										transitions={'finished': 'BeltPreGraspRight', 'failed': 'failed', 'no_products_belt': 'EndAssignment'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit, 'no_products_belt': Autonomy.Inherit},
 										remapping={'part_type': 'part_type', 'pose': 'pose'})
 
@@ -163,7 +161,7 @@ class main_belt_to_binSM(Behavior):
 										remapping={'part_type': 'part_type', 'pose': 'pose'})
 
 			# x:39 y:40
-			OperatableStateMachine.add('ExecuteMainBeltBin',
+			OperatableStateMachine.add('StartAssignment',
 										StartAssignment(),
 										transitions={'continue': 'ConveyorPowerOn'},
 										autonomy={'continue': Autonomy.Off})
@@ -199,10 +197,10 @@ class main_belt_to_binSM(Behavior):
 			# x:721 y:648
 			OperatableStateMachine.add('move_home_belt_2',
 										self.use_behavior(move_home_beltSM, 'move_home_belt_2'),
-										transitions={'finished': 'EndAssignment', 'failed': 'failed'},
+										transitions={'finished': 'ConveyorPowerOn', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
 
-			# x:555 y:647
+			# x:274 y:435
 			OperatableStateMachine.add('EndAssignment',
 										EndAssignment(),
 										transitions={'continue': 'finish'},
