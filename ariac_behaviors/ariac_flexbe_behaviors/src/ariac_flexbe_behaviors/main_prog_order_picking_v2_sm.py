@@ -124,17 +124,17 @@ class Main_prog_order_picking_v2SM(Behavior):
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit},
 										remapping={'part_type': 'part_type', 'pose_on_agv': 'pose_on_agv', 'pose_on_agv_r': 'pose_on_agv_r', 'pose_on_agv_l': 'pose_on_agv_l'})
 
-			# x:1141 y:386
+			# x:1148 y:353
 			OperatableStateMachine.add('add_itterator order',
 										AddNumericState(),
 										transitions={'done': 'part index message'},
 										autonomy={'done': Autonomy.Off},
 										remapping={'value_a': 'one', 'value_b': 'part_index', 'result': 'part_index'})
 
-			# x:747 y:414
+			# x:914 y:501
 			OperatableStateMachine.add('Check_product_amount',
 										EqualState(),
-										transitions={'true': 'move_home_belt_nvd', 'false': 'gripper check'},
+										transitions={'true': 'move_to_agv', 'false': 'gripper check'},
 										autonomy={'true': Autonomy.Off, 'false': Autonomy.Off},
 										remapping={'value_a': 'number_of_products', 'value_b': 'part_index'})
 
@@ -145,7 +145,7 @@ class Main_prog_order_picking_v2SM(Behavior):
 										autonomy={'continue': Autonomy.Off},
 										remapping={'message': 'part_type'})
 
-			# x:957 y:404
+			# x:1154 y:437
 			OperatableStateMachine.add('part index message',
 										MessageState(),
 										transitions={'continue': 'Check_product_amount'},
@@ -172,19 +172,26 @@ class Main_prog_order_picking_v2SM(Behavior):
 										transitions={'finished': 'get_orders', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit})
 
-			# x:553 y:462
+			# x:896 y:411
 			OperatableStateMachine.add('gripper check',
 										GripperActiveCheck(),
 										transitions={'Left': 'Get shipments', 'Right': 'Get shipments', 'failed': 'failed', 'Full': 'move_to_agv'},
 										autonomy={'Left': Autonomy.Off, 'Right': Autonomy.Off, 'failed': Autonomy.Off, 'Full': Autonomy.Off},
 										remapping={'arm_id': 'arm_id', 'tool_link': 'tool_link', 'move_group': 'move_group'})
 
-			# x:293 y:570
+			# x:635 y:505
 			OperatableStateMachine.add('move_to_agv',
 										self.use_behavior(move_to_agvSM, 'move_to_agv'),
-										transitions={'finished': 'finished', 'failed': 'failed'},
+										transitions={'finished': 'Check_product_amount_2', 'failed': 'failed'},
 										autonomy={'finished': Autonomy.Inherit, 'failed': Autonomy.Inherit},
 										remapping={'agv_id': 'agv_id', 'pose_on_agv_l': 'pose_on_agv_l', 'pose_on_agv_r': 'pose_on_agv_r'})
+
+			# x:438 y:593
+			OperatableStateMachine.add('Check_product_amount_2',
+										EqualState(),
+										transitions={'true': 'finished', 'false': 'Get shipments'},
+										autonomy={'true': Autonomy.Off, 'false': Autonomy.Off},
+										remapping={'value_a': 'number_of_products', 'value_b': 'part_index'})
 
 
 		return _state_machine

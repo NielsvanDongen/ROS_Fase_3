@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<behavior name="move_to_agv">
+<behavior name="Place_on_agv_2">
 
-	<executable package_path="ariac_flexbe_behaviors.move_to_agv_sm" class="move_to_agvSM" />
+	<executable package_path="ariac_flexbe_behaviors.place_on_agv_2_sm" class="Place_on_agv_2SM" />
 	<tagstring></tagstring>
 	<author>Niels van Dongen</author>
 	<date>Wed May 27 2020</date>
 	<description>
-		Moves complete gantry to the chosen agv.
+		places all parts on the agv.
 	</description>
 
 
 	<!-- Contained Behaviors -->
-	<contains name="Place_on_agv" />
-	<contains name="Place_on_agv_2" />
 
 	<!-- Available Parameters -->
 
