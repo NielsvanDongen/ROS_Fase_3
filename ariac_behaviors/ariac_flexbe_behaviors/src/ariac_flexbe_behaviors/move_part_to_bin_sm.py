@@ -78,9 +78,11 @@ class move_part_to_binSM(Behavior):
 		_state_machine.userdata.config_name_left_bin1 = 'leftArmBin1'
 		_state_machine.userdata.config_name_left_bin2 = 'leftArmBin2'
 		_state_machine.userdata.poseBin2 = []
-		_state_machine.userdata.iterator = 0.15
+		_state_machine.userdata.iterator = 0.17
 		_state_machine.userdata.offset = 0
 		_state_machine.userdata.bin2_offset = 0
+		_state_machine.userdata.config_name_right_left = 'gantryPosPlaceRightLeft'
+		_state_machine.userdata.config_name_left_right = 'gantryPosPlaceLeftRight'
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
@@ -101,14 +103,14 @@ class move_part_to_binSM(Behavior):
 										SrdfStateToMoveitAriac(),
 										transitions={'reached': 'GetPoseBin1', 'planning_failed': 'failed', 'control_failed': 'GetPoseBin1', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
-										remapping={'config_name': 'config_name_right_bin1', 'move_group': 'move_group_gantry', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
+										remapping={'config_name': 'config_name_right_left', 'move_group': 'move_group_gantry', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
 			# x:348 y:161
 			OperatableStateMachine.add('MoveToGasketBin',
 										SrdfStateToMoveitAriac(),
 										transitions={'reached': 'GetPoseBin2', 'planning_failed': 'failed', 'control_failed': 'GetPoseBin2', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
-										remapping={'config_name': 'config_name_right_bin2', 'move_group': 'move_group_gantry', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
+										remapping={'config_name': 'config_name_left_right', 'move_group': 'move_group_gantry', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
 			# x:675 y:36
 			OperatableStateMachine.add('ComputeDropPartPiston',
@@ -178,14 +180,14 @@ class move_part_to_binSM(Behavior):
 										SrdfStateToMoveitAriac(),
 										transitions={'reached': 'GetPoseBin1Left', 'planning_failed': 'failed', 'control_failed': 'GetPoseBin1Left', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
-										remapping={'config_name': 'config_name_left_bin1', 'move_group': 'move_group_gantry', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
+										remapping={'config_name': 'config_name_left_right', 'move_group': 'move_group_gantry', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
 			# x:1197 y:594
 			OperatableStateMachine.add('MoveToGasketBinLeft',
 										SrdfStateToMoveitAriac(),
 										transitions={'reached': 'GetPoseBin2_2', 'planning_failed': 'failed', 'control_failed': 'GetPoseBin2_2', 'param_error': 'failed'},
 										autonomy={'reached': Autonomy.Off, 'planning_failed': Autonomy.Off, 'control_failed': Autonomy.Off, 'param_error': Autonomy.Off},
-										remapping={'config_name': 'config_name_left_bin2', 'move_group': 'move_group_gantry', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
+										remapping={'config_name': 'config_name_right_left', 'move_group': 'move_group_gantry', 'move_group_prefix': 'move_group_prefix', 'action_topic': 'action_topic', 'robot_name': 'robot_name', 'config_name_out': 'config_name_out', 'move_group_out': 'move_group_out', 'robot_name_out': 'robot_name_out', 'action_topic_out': 'action_topic_out', 'joint_values': 'joint_values', 'joint_names': 'joint_names'})
 
 			# x:792 y:449
 			OperatableStateMachine.add('ComputeDropPartPistonLeft',

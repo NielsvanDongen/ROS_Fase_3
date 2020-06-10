@@ -84,6 +84,7 @@ class main_belt_to_binSM(Behavior):
 		_state_machine.userdata.part_type_left = ''
 		_state_machine.userdata.part_type_right = ''
 		_state_machine.userdata.config_name_place = 'gantryPosPlace'
+		_state_machine.userdata.config_name_right_left = 'gantryPosPlaceRightLeft'
 
 		# Additional creation code can be added inside the following tags
 		# [MANUAL_CREATE]
